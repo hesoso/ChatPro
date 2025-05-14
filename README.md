@@ -26,3 +26,5 @@ pnpm config set electron_mirror https://npmmirror.com/mirrors/electron/
 # 指定 sqlite3 的预编译镜像
 pnpm config set sqlite3_binary_host_mirror https://npmmirror.com/mirrors/sqlite3
 ```
+
+windows下安装sqlite3的时候需要安装Visual Studio 2022 的C++工具集
