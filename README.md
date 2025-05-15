@@ -18,7 +18,7 @@ If the standalone TypeScript plugin doesn't feel fast enough to you, Volar has a
 2. Reload the VSCode window by running `Developer: Reload Window` from the command palette. -->
 
 
-1. 为了解决electron安装的问题，需要配置镜像源
+1. 为了解决electron安装问题，需要配置镜像源
 ```shell
 pnpm config set registry https://registry.npmmirror.com
 # 指定 electron 的镜像

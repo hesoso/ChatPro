@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@types/better-sqlite3": "^7.6.13",
     "better-sqlite3": "^11.10.0",
     "sqlite3": "^5.1.7",
     "vue": "^3.4.21"

@@ -1,14 +1,28 @@
-const path = require('path');
-const fs = require('fs');
-const { app } = require('electron'); // 用于获取 userData 路径
-const Database = require('better-sqlite3');
+import path from 'path';
+import fs from 'fs';
+import { app } from 'electron'; // 获取存储应用程序特定用户数据的标准位置。
+import Database, { type Database as DB } from 'better-sqlite3';
+import {
+    PRAGMA_FOREIGN_KEYS_ON,
+    CREATE_USERS_TABLE_SQL,
+    CREATE_MESSAGES_TABLE_SQL,
+    CREATE_MESSAGES_SESSION_TIMESTAMP_INDEX_SQL,
+    CREATE_SESSIONS_TABLE_SQL,
+    CREATE_SESSIONS_UPDATED_AT_INDEX_SQL,
+    CREATE_GROUPS_TABLE_SQL
+} from './ddl'
 
-const dbPath = path.join(app.getPath('userData'), 'chat_app.db'); // 将数据库文件存储在用户数据目录
-let db;
+const dbPath: string = path.join(app.getPath('userData'), 'chat_app.db'); // 将数据库文件存储在用户数据目录
+let db: DB;
 
-function initializeDatabase() {
+/**
+ * 初始化数据库。
+ * 如果数据库目录或文件不存在，则会创建它们。
+ * 同时会创建应用程序所需的表（如果它们尚不存在）。
+ */
+function initializeDatabase(): void {
     // 如果目录不存在，则创建它 (虽然 better-sqlite3 会自动创建文件，但有时目录也需确保)
-    const dbDir = path.dirname(dbPath);
+    const dbDir: string = path.dirname(dbPath);
     if (!fs.existsSync(dbDir)) {
         fs.mkdirSync(dbDir, { recursive: true });
     }
@@ -16,75 +30,17 @@ function initializeDatabase() {
     db = new Database(dbPath, { verbose: console.log }); // verbose 会在控制台打印执行的 SQL 语句，方便调试
 
     // 如果你使用外键，建议开启
-    db.exec('PRAGMA foreign_keys = ON;');
+    db.exec(PRAGMA_FOREIGN_KEYS_ON);
+
 
     // 创建表 (如果表不存在的话)
-    const createUsersTable = `
-        CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            wxid TEXT UNIQUE NOT NULL, -- 微信号，唯一且不为空
-            nickname TEXT,
-            avatar_url TEXT,
-            remark TEXT, -- 备注
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-        );
-    `;
-    db.exec(createUsersTable);
+    db.exec(CREATE_USERS_TABLE_SQL);
+    db.exec(CREATE_MESSAGES_TABLE_SQL);
+    db.exec(CREATE_MESSAGES_SESSION_TIMESTAMP_INDEX_SQL);
+    db.exec(CREATE_SESSIONS_TABLE_SQL);
+    db.exec(CREATE_SESSIONS_UPDATED_AT_INDEX_SQL);
+    db.exec(CREATE_GROUPS_TABLE_SQL);
 
-    const createMessagesTable = `
-        CREATE TABLE IF NOT EXISTS messages (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            session_id TEXT NOT NULL, -- 会话ID，可以是 user_wxid 或 group_id
-            sender_id_ref TEXT, -- 发送者ID (可能是用户的wxid，或机器人的标识)
-            receiver_id_ref TEXT, -- 接收者ID (用户wxid或群id)
-            message_type TEXT DEFAULT 'text', -- 'text', 'image', 'file', 'video', 'system'
-            content TEXT, -- 文本内容，或文件/图片的路径/URL
-            timestamp DATETIME DEFAULT (STRFTIME('%Y-%m-%d %H:%M:%f', 'NOW', 'localtime')), -- 存储毫秒级时间
-            status TEXT DEFAULT 'sent', -- 'sent', 'delivered', 'read', 'failed'
-            is_from_me BOOLEAN DEFAULT 0, -- 1 表示是当前登录账号发出的
-            quote_message_id INTEGER, -- 引用的消息ID
-            raw_data TEXT -- 可以存储原始消息对象JSON字符串，以备将来扩展
-            -- FOREIGN KEY (sender_id_ref) REFERENCES users(wxid) ON DELETE SET NULL -- 如果sender_id_ref总是users表的wxid
-        );
-    `;
-    // 为常用查询字段创建索引
-    db.exec('CREATE INDEX IF NOT EXISTS idx_messages_session_id_timestamp ON messages (session_id, timestamp);');
-    db.exec(createMessagesTable);
-
-
-    const createSessionsTable = `
-        CREATE TABLE IF NOT EXISTS sessions (
-            id TEXT PRIMARY KEY, -- 会话的唯一标识，例如 user_wxid 或 group_id
-            type TEXT NOT NULL, -- 'user' (单聊) or 'group' (群聊)
-            name TEXT, -- 会话名称 (好友昵称或群名称)
-            avatar_url TEXT, -- 会话头像
-            last_message_preview TEXT, -- 最后一条消息预览
-            last_message_timestamp DATETIME, -- 最后一条消息的时间戳
-            unread_count INTEGER DEFAULT 0, -- 未读消息数量
-            is_pinned BOOLEAN DEFAULT 0, -- 是否置顶
-            is_muted BOOLEAN DEFAULT 0, -- 是否免打扰
-            draft TEXT, -- 草稿
-            updated_at DATETIME DEFAULT (STRFTIME('%Y-%m-%d %H:%M:%f', 'NOW', 'localtime'))
-        );
-    `;
-    db.exec('CREATE INDEX IF NOT EXISTS idx_sessions_updated_at ON sessions (updated_at);');
-    db.exec(createSessionsTable);
-
-    // ... 创建其他表: groups, robots, settings, quick_replies 等
-    // 例如群组表 (groups)
-    const createGroupsTable = `
-        CREATE TABLE IF NOT EXISTS groups (
-            id TEXT PRIMARY KEY, -- 群ID，例如群wxid
-            name TEXT,
-            avatar_url TEXT,
-            owner_id_ref TEXT, -- 群主wxid
-            member_count INTEGER,
-            announcement TEXT, -- 群公告
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-            -- 还可以有 group_members 表来存储群成员关系
-        );
-    `;
-    db.exec(createGroupsTable);
 
     console.log('数据库已初始化，并确保表已创建。');
 }
@@ -97,13 +53,124 @@ app.whenReady().then(() => {
 
 // 确保在应用退出时关闭数据库连接
 app.on('will-quit', () => {
-    if (db) {
-        db.close((err) => {
-            if (err) {
-                console.error('关闭数据库失败:', err.message);
-            } else {
-                console.log('数据库连接已关闭。');
-            }
-        });
-    }
+    if (db) db.close();
 });
+
+// 导出一个获取数据库实例的函数，以便在其他模块中使用
+export function getDB(): DB {
+    if (!db) {
+        // 理论上，在 app.whenReady 之后 db 就应该被初始化了
+        // 但作为健壮性考虑，可以再次尝试初始化或抛出错误
+        console.warn('数据库尚未初始化，正在尝试再次初始化...');
+        initializeDatabase();
+        if (!db) { // 如果再次初始化失败
+            throw new Error('数据库实例尚未初始化，无法获取。请确保 initializeDatabase() 已成功调用。');
+        }
+    }
+    return db;
+}
+
+// ---- 类型定义 ----
+export interface User {
+    id?: number;
+    wxid: string;
+    nickname?: string | null;
+    avatar_url?: string | null;
+    remark?: string | null;
+    created_at?: number; // Unix 毫秒时间戳
+}
+
+export interface NewMessage {
+    session_id: string;
+    sender_id_ref?: string | null; // 可以是机器人等非用户ID
+    receiver_id_ref?: string | null; // 可以是群ID
+    message_type?: string;
+    content: string;
+    is_from_me?: boolean;
+    quote_message_id?: number | null;
+    raw_data?: string | null;
+    // timestamp 将在 addMessage 内部生成
+    // status 默认为 'sent'
+}
+
+export interface Message extends NewMessage {
+    id: number;
+    timestamp: number; // Unix 毫秒时间戳
+    status: string;
+}
+
+// ---- 数据库操作函数 ----
+
+/**
+ * 添加一条新的聊天消息。
+ * @param messageData - 消息数据，不包含 id 和 timestamp (timestamp 会自动生成)。
+ * @returns 插入消息的 id 和 timestamp。
+ * @throws 如果插入失败，则抛出错误。
+ */
+export function addMessage(messageData: NewMessage): { id: number; timestamp: number } {
+    const dbInstance = getDB();
+    const timestamp = Date.now(); // 生成当前时间的 Unix 毫秒时间戳
+    const sql = `
+        INSERT INTO messages (
+            session_id, sender_id_ref, receiver_id_ref, message_type, 
+            content, timestamp, is_from_me, quote_message_id, raw_data
+        )
+        VALUES (
+            @session_id, @sender_id_ref, @receiver_id_ref, @message_type, 
+            @content, @timestamp, @is_from_me, @quote_message_id, @raw_data
+        );
+    `;
+
+    try {
+        const stmt = dbInstance.prepare(sql);
+        const result = stmt.run({
+            ...messageData,
+            message_type: messageData.message_type || 'text', // 默认消息类型
+            is_from_me: messageData.is_from_me === undefined ? 0 : (messageData.is_from_me ? 1 : 0),
+            timestamp, // 使用我们生成的 Unix 毫秒时间戳
+        });
+        return { id: Number(result.lastInsertRowid), timestamp };
+    } catch (error) {
+        console.error('Failed to add message:', error);
+        throw error; // 或者返回一个更友好的错误对象
+    }
+}
+
+/**
+ * 根据会话ID获取消息列表，支持分页。
+ * @param sessionId - 会话ID。
+ * @param limit - 获取的消息数量，默认为 50。
+ * @param offset - 偏移量，用于分页，默认为 0。
+ * @param orderByTimestamp - 排序方式，'ASC' (升序，旧消息在前) 或 'DESC' (降序，新消息在前)，默认为 'DESC'。
+ * @returns 消息数组。
+ */
+export function getMessagesBySessionId(
+    sessionId: string,
+    limit: number = 50,
+    offset: number = 0,
+    orderByTimestamp: 'ASC' | 'DESC' = 'DESC'
+): Message[] {
+    const dbInstance = getDB();
+    const sql = `
+        SELECT id, session_id, sender_id_ref, receiver_id_ref, message_type, 
+               content, timestamp, status, is_from_me, quote_message_id, raw_data
+        FROM messages
+        WHERE session_id = @sessionId
+        ORDER BY timestamp ${orderByTimestamp === 'ASC' ? 'ASC' : 'DESC'} -- 防止SQL注入，显式检查值
+        LIMIT @limit OFFSET @offset;
+    `;
+
+    try {
+        const stmt = dbInstance.prepare(sql);
+        const messages = stmt.all({ sessionId, limit, offset }) as Message[];
+        return messages.map(msg => ({
+            ...msg,
+            is_from_me: Boolean(msg.is_from_me) // 将 0/1 转换为 boolean
+        }));
+    } catch (error) {
+        console.error(`Failed to get messages for session ${sessionId}:`, error);
+        return []; // 或者抛出错误
+    }
+}
+
+
