@@ -10,26 +10,15 @@
   },
   "dependencies": {
     "@types/better-sqlite3": "^7.6.13",
-    "animate.css": "^4.1.1",
     "better-sqlite3": "^11.10.0",
-    "element-plus": "^2.9.10",
     "sqlite3": "^5.1.7",
-    "vue": "^3.4.21",
-    "vue-router": "^4.5.1"
+    "vue": "^3.4.21"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.0.4",
     "electron": "^30.0.1",
     "electron-builder": "^24.13.3",
     "electron-rebuild": "^3.2.9",
-    "eslint": "^9.27.0",
-    "eslint-plugin-prettier": "^5.4.0",
-    "eslint-plugin-vue": "^10.1.0",
-    "prettier": "^3.5.3",
-    "prettier-eslint": "^16.4.2",
-    "sass": "1.79.6",
-    "sass-loader": "^16.0.5",
-    "sass-migrator": "^2.3.2",
     "typescript": "^5.2.2",
     "vite": "^5.1.6",
     "vite-plugin-electron": "^0.28.6",

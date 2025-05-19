@@ -1,24 +1,6 @@
-<!-- # Vue 3 + TypeScript + Vite
+### 场景问题解决方案
 
-This template should help get you started developing with Vue 3 and TypeScript in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
-
-## Recommended IDE Setup
-
-- [VS Code](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur) + [TypeScript Vue Plugin (Volar)](https://marketplace.visualstudio.com/items?itemName=Vue.vscode-typescript-vue-plugin).
-
-## Type Support For `.vue` Imports in TS
-
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [TypeScript Vue Plugin (Volar)](https://marketplace.visualstudio.com/items?itemName=Vue.vscode-typescript-vue-plugin) to make the TypeScript language service aware of `.vue` types.
-
-If the standalone TypeScript plugin doesn't feel fast enough to you, Volar has also implemented a [Take Over Mode](https://github.com/johnsoncodehk/volar/discussions/471#discussioncomment-1361669) that is more performant. You can enable it by the following steps:
-
-1. Disable the built-in TypeScript Extension
-   1. Run `Extensions: Show Built-in Extensions` from VSCode's command palette
-   2. Find `TypeScript and JavaScript Language Features`, right click and select `Disable (Workspace)`
-2. Reload the VSCode window by running `Developer: Reload Window` from the command palette. -->
-
-
-1. 为了解决electron安装问题，需要配置镜像源
+1. 对于某些依赖（如electron）安装安装问题，通常通过配置镜像源来解决。
 ```shell
 pnpm config set registry https://registry.npmmirror.com
 # 指定 electron 的镜像
@@ -27,6 +9,24 @@ pnpm config set electron_mirror https://npmmirror.com/mirrors/electron/
 pnpm config set sqlite3_binary_host_mirror https://npmmirror.com/mirrors/sqlite3
 # 也可以单独为某个镜像设置源
 pnpm add better-sqlite3 --registry=https://registry.npmmirror.com
+# 有时候碰到的依赖包问题可以尝试使用以下命令清理依赖后重新安装
+pnpm store prune
 ```
 
-2. windows下安装sqlite3的时候需要安装Visual Studio 2022 的C++工具集
+2. windows下安装sqlite3报错。
+> 🌟🌟🌟 需要安装Visual Studio 2022 的C++工具集，然后重新安装
+
+
+3. 模块与当前 Node.js 或 Electron 运行环境的 ABI 版本不兼容。
+```shell
+# 比如出现类似以下报错
+(node:78954) UnhandledPromiseRejectionWarning: Error: The module '/Users/hejianhong/Desktop/ChatPro/node_modules/.pnpm/better-sqlite3@11.10.0/node_modules/better-sqlite3/build/Release/better_sqlite3.node'
+was compiled against a different Node.js version using
+NODE_MODULE_VERSION 115. This version of Node.js requires
+NODE_MODULE_VERSION 123. Please try re-compiling or re-installing
+# NODE_MODULE_VERSION 是 Node.js 的 ABI 版本标识符，不同 Node.js 或 Electron 版本会使用不同的值。
+# 这种情况常见于：在 Electron 项目中直接使用 npm install 安装原生模块（如 better-sqlite3），但未针对 Electron 重新编译。
+# 🌟🌟🌟解决方案：安装 electron-rebuild 为 Electron 重新编译模块
+pnpm add -D electron-rebuild
+./node_modules/.bin/electron-rebuild
+```
