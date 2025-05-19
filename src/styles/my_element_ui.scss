@@ -1,0 +1,1201 @@
+.el-table {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  .el-table__header-wrapper {
+    min-height: 49px;
+  }
+  .el-table__body-wrapper {
+    // overflow: auto;
+    overflow-y: auto;
+    @include scroll;
+  }
+  .cell {
+    text-overflow: clip !important;
+  }
+}
+
+.el-image {
+  .el-icon-circle-close {
+    color: white;
+  }
+}
+
+// dialog 居中显示
+.el-dialog {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  margin: 0 !important;
+  max-width: calc(100% - 40px);
+  max-height: calc(100% - 40px);
+}
+
+// 弹框的基本样式
+.base-dialog {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  .el-dialog {
+    margin-top: 0 !important;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+
+    .el-dialog__header {
+      padding: 10px 20px;
+      // border: solid red 1px;
+      // .el-dialog__title {
+      // font-size: 14px;
+      // color: #333333;
+      // border: solid red 1px;
+      // }
+      .el-dialog__headerbtn {
+        top: 14px;
+      }
+    }
+
+    .el-dialog__body {
+      flex: 1 1 auto;
+      padding: 20px;
+      overflow: auto;
+    }
+
+    .el-dialog__footer {
+      padding: 10px 20px;
+    }
+  }
+}
+
+.task-detail-admin {
+  @extend .base-dialog;
+  .el-dialog {
+    height: 500px;
+    width: 600px;
+    .el-dialog__body {
+      @extend .scroll;
+      overflow: auto;
+
+      .task-tip {
+        font-size: 16px;
+        font-weight: 600;
+        padding: 5px 0;
+      }
+      .img-list {
+        display: flex;
+        flex-wrap: wrap;
+        .img-item {
+          margin: 10px;
+          width: 100px;
+          height: 100px;
+          padding: 5px;
+          object-fit: scale-down;
+        }
+      }
+    }
+  }
+}
+
+.zomby-list-dialog {
+  @extend .base-dialog;
+  .el-dialog {
+    .el-dialog__body {
+      @extend .scroll;
+      height: 500px;
+      overflow: auto;
+    }
+  }
+}
+
+.remarks-dialog {
+  @extend .base-dialog;
+
+  .el-dialog {
+    .el-dialog__body {
+      @extend .scroll;
+      // height: 500px;
+      overflow: auto;
+    }
+  }
+}
+
+.money-detail-dialog {
+  @extend .base-dialog;
+  .el-dialog {
+    .el-dialog__body {
+      @extend .scroll;
+      height: 500px;
+      overflow: auto;
+    }
+  }
+}
+
+.friend-circle-dialog {
+  @extend .base-dialog;
+  .el-dialog {
+    .el-dialog__body {
+      @extend .scroll;
+      height: 500px;
+      overflow: scroll;
+    }
+  }
+}
+
+// 添加回复的dialog样式
+.add-reply-dialog {
+  @extend .base-dialog;
+
+  .el-dialog {
+    width: 700px;
+    height: 500px;
+
+    .el-dialog__body {
+      flex: 1 1 auto;
+      padding: 0 20px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+
+      .reply-item {
+        display: flex;
+        padding: 10px 0;
+        align-items: center;
+        .reply-item-tip {
+          width: 100px;
+          min-width: 100px;
+          font-size: 12px;
+          font-weight: 600;
+        }
+      }
+
+      .reply-content {
+        display: flex;
+        flex-direction: column;
+        flex: 1 1 auto;
+
+        .reply-item-tip {
+          width: 100px;
+          min-width: 100px;
+          font-size: 12px;
+          font-weight: 600;
+          padding: 10px 0;
+        }
+
+        .setting-reply-content {
+          display: flex;
+          flex: 1 1 auto;
+
+          .type-content {
+            flex: 1 1 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-evenly;
+            overflow: hidden;
+          }
+          .link-form {
+            justify-content: flex-start;
+            padding: 10px 0 !important;
+            height: 300px;
+            overflow: auto;
+            @extend .scroll;
+          }
+        }
+      }
+
+      .el-textarea {
+        .el-textarea__inner {
+          height: 280px !important;
+        }
+      }
+    }
+  }
+}
+
+.add-device-dialog {
+  @extend .base-dialog;
+  .el-dialog {
+    width: 500px;
+    height: 600px;
+    .el-dialog__header {
+      padding: 10px;
+      position: relative;
+      .el-dialog__title {
+        font-size: 16px;
+        font-weight: 600;
+        color: #333333;
+      }
+      .el-dialog__headerbtn {
+        top: 10px;
+      }
+    }
+  }
+}
+
+.circle-detail-dialog {
+  .el-dialog {
+    height: 80%;
+    margin-top: 10vh !important;
+    overflow: hidden;
+    border-radius: 10px;
+
+    display: flex;
+    flex-direction: column;
+
+    .el-dialog__body {
+      padding: 10px;
+      overflow: auto;
+      flex: 1 1 auto;
+    }
+  }
+}
+
+// 添加群发dialog样式
+.add-group-send-dialog {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  .el-dialog {
+    margin-top: 0 !important;
+    width: 724px;
+    height: 347px;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+
+    .el-dialog__header {
+      padding: 10px 30px;
+      .el-dialog__title {
+        font-size: 14px;
+        color: #333333;
+      }
+    }
+
+    .el-dialog__body {
+      flex: 1 1 auto;
+      margin-top: 10px;
+      padding: 0;
+      display: flex;
+      overflow: hidden;
+
+      .el-textarea {
+        margin: 0 16px;
+        .el-textarea__inner {
+          width: 100%;
+          height: 100% !important;
+          padding: 10px;
+          border: solid #dadada 1px;
+        }
+      }
+
+      .add-reply-content {
+        flex: 1 1 auto;
+        padding: 10px;
+        margin: 0 16px;
+        overflow: auto;
+        @extend .scroll;
+
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        // justify-content: center;
+        border: solid #dadada 1px;
+      }
+    }
+    .el-dialog__footer {
+      display: flex;
+      align-items: center;
+      padding: 0;
+      height: 60px;
+      min-height: 60px;
+    }
+  }
+}
+
+// 消息预览的样式
+.preview-box {
+  width: 254px;
+  height: 500px;
+  background-image: url("~@/assets/images/group/previewBg.png");
+  padding: 70px 14px;
+
+  .preview-list {
+    height: 100%;
+    overflow: auto;
+    @extend .scroll;
+
+    .preview-item {
+      margin: 10px 5px;
+      display: flex;
+      // align-items: center;
+
+      .preview-item-bg {
+        background-color: #ffffff;
+        padding: 5px;
+      }
+      .preview-item-link {
+        width: 170px;
+        display: flex;
+        flex-direction: column;
+        .ellipsis-3 {
+          color: #a8a8a8;
+          overflow: hidden;
+          font-size: 12px;
+          line-height: 20px;
+          margin: 5px;
+          @include ellipsis(3);
+        }
+      }
+    }
+  }
+}
+
+.task-detail-dialog {
+  @extend .base-dialog;
+  .el-dialog {
+    width: 600px;
+    height: 646px;
+
+    .el-dialog__header {
+      border-bottom: solid #e9e9eb 1px;
+    }
+
+    .el-dialog__body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      display: flex;
+      justify-content: space-between;
+      .detail-ls {
+        width: 254px;
+        li {
+          display: flex;
+          line-height: 40px;
+        }
+      }
+    }
+
+    .el-dialog__footer {
+      border-top: solid #e9e9eb 1px;
+    }
+  }
+}
+
+.add-reply-aside {
+  li {
+    width: 115px;
+    min-width: 115px;
+    height: 27px;
+    line-height: 27px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    color: #333333;
+    border-left: solid #fff 4px;
+    i {
+      color: #999999;
+      margin-left: 26px;
+      margin-right: 6px;
+    }
+  }
+  .li-selected {
+    background-color: #fffaf2;
+    color: #ff9f00;
+    border-left: solid #ff9f00 4px;
+    i {
+      color: #ff9f00;
+    }
+  }
+}
+
+// 添加群发dialog样式
+.group-send-dialog {
+  @extend .base-dialog;
+  .el-dialog {
+    width: 876px;
+    height: 646px;
+
+    .el-dialog__header {
+      // height: 44px;
+      padding: 10px 20px;
+      border-bottom: solid #e9e9eb 1px;
+      .el-dialog__title {
+        font-size: 14px;
+      }
+    }
+
+    .el-dialog__body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      display: flex;
+      justify-content: space-between;
+
+      .msg-list {
+        width: 520px;
+        height: 250px;
+        position: relative;
+        border: 1px solid rgba(0, 0, 0, 0.08);
+        overflow: auto;
+        @extend .scroll;
+
+        .no-msg {
+          width: 100%;
+          height: 100%;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .msg-item {
+          height: 50px;
+          padding: 0 10px;
+          font-size: 14px;
+          font-weight: 400;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+          // color: #a8a8a8;
+        }
+      }
+
+      .add-msg {
+        height: 192px;
+        width: 520px;
+        margin-top: 14px;
+        overflow: hidden;
+        border: 1px solid rgba(0, 0, 0, 0.08);
+
+        .el-tabs__header {
+          margin-bottom: 2px;
+        }
+        .el-tabs__nav-wrap {
+          padding-left: 20px;
+        }
+        .el-tab-pane {
+          padding: 5px;
+          max-height: 110px;
+          .el-textarea {
+            height: 100px;
+            .el-textarea__inner {
+              @extend .scroll;
+              width: 100%;
+              height: 100px !important;
+              border: none;
+            }
+          }
+        }
+
+        .tab-pane-picture {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          height: 100px;
+
+          .pic-btn {
+            margin-left: 10px;
+            line-height: 30px;
+            display: flex;
+            flex-direction: column;
+          }
+        }
+
+        .link-list {
+          display: flex;
+          flex-wrap: wrap;
+          overflow: auto !important;
+          // border: solid red 1px;
+          @extend .scroll;
+        }
+      }
+    }
+
+    .el-dialog__footer {
+      border-top: solid #e9e9eb 1px;
+      // height: 60px;
+      // min-height: 60px;
+      .group-send-footer {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+    }
+  }
+}
+
+// 创建朋友圈素材样式
+.create-circle-resource {
+  @extend .base-dialog;
+  .el-dialog {
+    width: 824px;
+    height: 620px;
+
+    .el-dialog__header {
+      padding: 10px;
+    }
+
+    .el-dialog__body {
+      flex: 1 1 auto;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .el-dialog__footer {
+      display: flex;
+      justify-content: space-between;
+    }
+  }
+}
+
+// 发红包的样式
+.transfer-money,
+.red-envelope {
+  @extend .base-dialog;
+  .el-dialog {
+    width: 256px;
+    height: 315px;
+    border-radius: 10px;
+    .el-dialog__body {
+      padding: 0;
+      .el-form {
+        display: flex;
+        flex-direction: column;
+      }
+    }
+  }
+}
+
+.we-app-item {
+  position: relative;
+  width: 90px;
+  height: 90px;
+  margin: 5px;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  justify-content: center;
+
+  cursor: pointer;
+  .we-app-img {
+    width: 53px;
+    height: 53px;
+    border-radius: 50%;
+  }
+  .we-app-img-no {
+    @extend .we-app-img;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .we-app-name {
+    max-width: 90px;
+    padding: 5px;
+  }
+  .el-icon-delete {
+    color: #f56c6c;
+    position: absolute;
+    top: 5px;
+    right: 5px;
+  }
+}
+.we-app-item-checked {
+  background-color: #eff5fd;
+  color: #5a9cf8;
+}
+
+// 工具栏 小程序样式
+.we-app {
+  @extend .base-dialog;
+  .el-dialog {
+    width: 724px;
+    height: 507px;
+    overflow: hidden;
+    .el-dialog__body {
+      overflow: auto;
+      @include scroll;
+
+      flex: 1 1 auto;
+      padding: 15px 22px;
+      display: flex;
+      flex-wrap: wrap;
+      align-content: flex-start;
+    }
+  }
+}
+
+// 红包详情
+.hb-detail {
+  @extend .base-dialog;
+  .el-dialog {
+    width: 724px;
+    height: 507px;
+    .el-dialog__body {
+      flex: 1 1 auto;
+      padding: 15px 22px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+  }
+}
+
+// 任务详情
+.task-detail {
+  @extend .base-dialog;
+  .el-dialog {
+    width: 724px;
+    height: 350px;
+
+    .el-dialog__body {
+      flex: 1 1 auto;
+      overflow: hidden;
+      display: flex;
+      padding: 10px 20px;
+
+      .chat-link {
+        flex-direction: column;
+        width: 300px;
+        max-width: 100%;
+        cursor: pointer;
+        .link-title {
+          font-size: 14px;
+          font-weight: 600;
+        }
+        .link-content {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          .link-des {
+            flex: auto;
+            color: #aaaaaa;
+            font-size: 10px;
+            margin-right: 5px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            word-break: break-all;
+            word-wrap: break-word;
+            display: -webkit-box;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 3;
+          }
+          .link-img {
+            max-width: 50px;
+            max-height: 50px;
+            min-height: 50px;
+            min-width: 50px;
+            border-radius: 5px;
+          }
+        }
+        .link-type {
+          color: #aaaaaa;
+          margin-top: 5px;
+          text-align: start;
+          border-top: solid #e8eaec 1px;
+        }
+      }
+      .chat-app {
+        padding: 10px;
+        // width: 300px;
+        // max-width: 100%;
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        .app-des {
+          display: flex;
+          .app-icon {
+            width: 20px;
+            height: 20px;
+          }
+          .app-source {
+            width: 100%;
+            font-size: 12px;
+            margin-left: 5px;
+            color: gray;
+          }
+        }
+        .app-title {
+          width: 100%;
+          height: 30px;
+          font-size: 12px;
+          font-weight: 600;
+          line-height: 30px;
+        }
+        .app-img {
+          align-self: center;
+          max-width: 200px;
+        }
+        .app-typestr {
+          height: 25px;
+          margin-top: 5px;
+          line-height: 25px;
+          color: gray;
+          text-align: start;
+          border-top: solid #aaaaaa 1px;
+        }
+      }
+
+      .detail-ls {
+        display: flex;
+        flex-direction: column;
+        width: 50%;
+        padding: 10px;
+        li {
+          display: flex;
+          align-items: center;
+          padding: 5px 5px 5px 50px;
+        }
+      }
+    }
+  }
+}
+
+// 任务详情
+.task-detail-sort {
+  @extend .base-dialog;
+  .el-dialog {
+    width: 500px;
+    height: 350px;
+
+    .el-dialog__body {
+      flex: 1 1 auto;
+      overflow: hidden;
+      display: flex;
+      padding: 10px 20px;
+
+      .chat-link {
+        flex-direction: column;
+        width: 300px;
+        max-width: 100%;
+        cursor: pointer;
+        .link-title {
+          font-size: 14px;
+          font-weight: 600;
+        }
+        .link-content {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          .link-des {
+            flex: auto;
+            color: #aaaaaa;
+            font-size: 10px;
+            margin-right: 5px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            word-break: break-all;
+            word-wrap: break-word;
+            display: -webkit-box;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 3;
+          }
+          .link-img {
+            max-width: 50px;
+            max-height: 50px;
+            min-height: 50px;
+            min-width: 50px;
+            border-radius: 5px;
+          }
+        }
+        .link-type {
+          color: #aaaaaa;
+          margin-top: 5px;
+          text-align: start;
+          border-top: solid #e8eaec 1px;
+        }
+      }
+      .chat-app {
+        padding: 10px;
+        // width: 300px;
+        // max-width: 100%;
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        .app-des {
+          display: flex;
+          .app-icon {
+            width: 20px;
+            height: 20px;
+          }
+          .app-source {
+            width: 100%;
+            font-size: 12px;
+            margin-left: 5px;
+            color: gray;
+          }
+        }
+        .app-title {
+          width: 100%;
+          height: 30px;
+          font-size: 12px;
+          font-weight: 600;
+          line-height: 30px;
+        }
+        .app-img {
+          align-self: center;
+          max-width: 200px;
+        }
+        .app-typestr {
+          height: 25px;
+          margin-top: 5px;
+          line-height: 25px;
+          color: gray;
+          text-align: start;
+          border-top: solid #aaaaaa 1px;
+        }
+      }
+
+      .detail-ls {
+        display: flex;
+        flex-direction: column;
+        width: 50%;
+        padding: 10px;
+        li {
+          display: flex;
+          align-items: center;
+          padding: 5px 5px 5px 50px;
+        }
+      }
+    }
+  }
+}
+
+// 删除聊天记录的样式
+.delete-chats {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  .el-dialog {
+    margin-top: 0 !important;
+    width: 256px;
+    height: 263px;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    .el-dialog__body {
+      flex: 1 1 auto;
+      display: flex;
+      align-items: center;
+      flex-direction: column;
+      justify-content: space-evenly;
+      padding: 0;
+    }
+    .el-dialog__footer {
+      padding: 10px 10px 20px 10px;
+      display: flex;
+      justify-content: center;
+    }
+  }
+}
+
+// 二维码的样式
+.qr-code-dialog {
+  @extend .base-dialog;
+  .el-dialog {
+    width: 256px;
+    height: 303px;
+    .el-dialog__header {
+      padding: 0;
+      padding-left: 10px;
+      .el-dialog__title {
+        width: 150px;
+        font-size: 14px;
+        color: #333333;
+        display: inline-block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .el-dialog__headerbtn {
+        top: 5px;
+      }
+    }
+
+    .el-dialog__body {
+      flex: 1 1 auto;
+      display: flex;
+      align-items: center;
+      flex-direction: column;
+      justify-content: space-evenly;
+      padding: 0;
+      .qr-code-img {
+        width: 200px;
+        height: 200px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+    }
+  }
+}
+
+// 群二维码
+.qr-code-dialog-room {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  .el-dialog {
+    margin-top: 0 !important;
+    width: 256px;
+    height: 360px;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+
+    .el-dialog__header {
+      .el-dialog__title {
+        width: 150px;
+        font-size: 14px;
+        color: #333333;
+        display: inline-block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .el-dialog__headerbtn {
+        top: 10px;
+      }
+    }
+
+    .el-dialog__body {
+      flex: 1 1 auto;
+      display: flex;
+      align-items: center;
+      flex-direction: column;
+      justify-content: space-evenly;
+      padding: 0;
+      .qr-code-img {
+        width: 200px;
+        height: 200px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+    }
+  }
+}
+
+// 好友资料 添加标签
+.label-remark-add-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  .el-dialog {
+    margin-top: 0 !important;
+    width: 500px;
+    height: 350px;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+
+    .el-dialog__header {
+      .el-dialog__title {
+        width: 150px;
+        font-size: 14px;
+        color: #333333;
+        display: inline-block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .el-dialog__headerbtn {
+        top: 10px;
+      }
+    }
+
+    .el-dialog__body {
+      flex: 1 1 auto;
+      overflow: auto;
+      display: flex;
+      flex-direction: column;
+      padding: 10px;
+
+      .p-class {
+        padding: 5px;
+        background-color: #bfbfbf;
+      }
+      ul {
+        margin: 10px 5px;
+      }
+
+      .label-class {
+        color: #409eff;
+        background-color: #ecf5ff;
+        border-radius: 4px;
+        border-color: solid #d9ecff 1px;
+        display: inline-block;
+        height: 32px;
+        line-height: 32px;
+        font-size: 12px;
+        padding: 0 5px;
+        margin: 2px;
+        cursor: pointer;
+      }
+      .chose {
+        color: #ffd04b;
+      }
+    }
+    .el-dialog__footer {
+      padding: 10px;
+    }
+  }
+}
+
+// SlotFriends的样式
+.slot-friends {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  .el-dialog {
+    margin-top: 0 !important;
+    width: 724px;
+    height: 507px;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+
+    .el-dialog__header {
+      padding: 10px;
+      .el-dialog__title {
+        width: 150px;
+        font-size: 14px;
+        color: #333333;
+      }
+      .el-dialog__headerbtn {
+        top: 15px;
+      }
+    }
+
+    .el-dialog__body {
+      flex: 1 1 auto;
+      overflow: auto;
+      display: flex;
+      flex-direction: column;
+      padding: 0 10px;
+
+      .all-check {
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+      }
+
+      .slot-friends-content {
+        flex: 1 1 auto;
+        display: flex;
+        overflow: auto;
+
+        .operation-box {
+          width: 137px;
+          min-width: 137px;
+          height: 100%;
+          padding: 5px 5px 0 5px;
+          border-radius: 5px 0 0 5px;
+          border: solid #eeeeee 1px;
+          overflow: hidden;
+
+          display: flex;
+          flex-direction: column;
+
+          .search-input {
+            .el-input__inner {
+              height: 28px;
+              line-height: 28px;
+              color: #dadada;
+              font-size: 12px;
+              padding-left: 5px;
+            }
+          }
+
+          .label-list {
+            width: 100%;
+            flex: 1 1 auto;
+            overflow: auto;
+            .label-item {
+              display: flex;
+              align-items: center;
+              color: #333333;
+              font-size: 12px;
+              height: 26px;
+              cursor: pointer;
+              p {
+                margin-left: 5px;
+                width: 90px;
+                height: 26px;
+                line-height: 26px;
+                @extend .ellipsis;
+              }
+            }
+            .current-label {
+              color: #ff9f00;
+            }
+            .label-disabled {
+              // border: solid red 1px;
+              color: #c0c4cc;
+              cursor: not-allowed;
+              input {
+                cursor: not-allowed;
+                color: #c0c4cc;
+                border: solid #c0c4cc 1px;
+              }
+            }
+          }
+        }
+
+        .friends-list {
+          padding: 5px;
+          overflow: hidden;
+          flex: 1 1 auto;
+          border: solid #eeeeee 1px;
+          border-left: none;
+          border-radius: 0 5px 5px 0;
+          display: flex;
+          flex-direction: column;
+          .el-table {
+            width: 100%;
+            height: 100%;
+            .el-table__header-wrapper {
+              // min-height: 60px;
+              min-height: 40px;
+              display: flex;
+              align-items: center;
+              background-color: #ff9f000d;
+
+              .el-table__header {
+                th {
+                  background-color: #ff9f000d;
+                  padding: 0;
+                  border-bottom: none;
+                }
+              }
+            }
+            td {
+              padding: 5px;
+            }
+          }
+        }
+      }
+      .tip {
+        font-size: 12px;
+        color: #999999;
+        padding: 5px 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+    }
+    .el-dialog__footer {
+      padding: 10px;
+    }
+  }
+}

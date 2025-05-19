@@ -20,3 +20,6 @@ electron.contextBridge.exposeInMainWorld("ipcRenderer", {
   // You can expose other APTs you need here.
   // ...
 });
+electron.contextBridge.exposeInMainWorld("db", {
+  fetchChatData: (params) => electron.ipcRenderer.invoke("db:query-chat-data", params)
+});
