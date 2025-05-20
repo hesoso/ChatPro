@@ -1,4 +1,4 @@
-import { app, ipcMain as ipcMain$1, BrowserWindow, Tray } from "electron";
+import { app, ipcMain, BrowserWindow } from "electron";
 import { fileURLToPath } from "node:url";
 import path$1 from "node:path";
 import path from "path";
@@ -147,7 +147,7 @@ var DB_EVENTS = /* @__PURE__ */ ((DB_EVENTS2) => {
   return DB_EVENTS2;
 })(DB_EVENTS || {});
 const regsiterDatabaseHandler = () => {
-  ipcMain$1.handle(DB_EVENTS.AddMessage, async (_event, messageData) => {
+  ipcMain.handle(DB_EVENTS.AddMessage, async (_event, messageData) => {
     try {
       const result = addMessage(messageData);
       return { success: true, data: result };
@@ -156,7 +156,7 @@ const regsiterDatabaseHandler = () => {
       return { success: false, error: error.message || "Failed to add message" };
     }
   });
-  ipcMain$1.handle(DB_EVENTS.GetMessages, async (_event, params) => {
+  ipcMain.handle(DB_EVENTS.GetMessages, async (_event, params) => {
     try {
       const { sessionId, limit, offset, orderByTimestamp } = params;
       const messages = getMessagesBySessionId(sessionId, limit, offset, orderByTimestamp);
@@ -166,7 +166,7 @@ const regsiterDatabaseHandler = () => {
       return { success: false, error: error.message || "Failed to get messages" };
     }
   });
-  ipcMain$1.handle(DB_EVENTS.GetChatData, async (_event, params) => {
+  ipcMain.handle(DB_EVENTS.GetChatData, async (_event, params) => {
     try {
       const sessionId = params.wxid;
       const { limit, offset, orderByTimestamp } = params;
@@ -186,117 +186,31 @@ const RENDERER_DIST = path$1.join(process.env.APP_ROOT, "dist");
 process.env.VITE_PUBLIC = VITE_DEV_SERVER_URL ? path$1.join(process.env.APP_ROOT, "public") : RENDERER_DIST;
 const isDevelopment = process.env.NODE_ENV !== "production";
 let win;
-let size = null;
-let timer = null;
-let count = -1;
-let appTray = null;
-const iconUrl = isDevelopment ? "public/app.ico" : `${__dirname}/app.ico`;
-const emptyUrl = isDevelopment ? "public/empty.ico" : `${__dirname}/empty.ico`;
 function createWindow() {
   win = new BrowserWindow({
-    // icon: path.join(process.env.VITE_PUBLIC, 'electron-vite.svg'),
-    // width: 1440, // 宽
-    // height: 900, // 高
-    width: 1e3,
-    height: 711,
-    icon: iconUrl,
+    icon: path$1.join(process.env.VITE_PUBLIC, "logo.ico"),
+    width: 1200,
+    height: 760,
     frame: false,
-    // 设置为 false 时可以创建一个无边框窗口
-    transparent: true,
+    // 设置为 false 时用于创建无边框窗口
     resizable: false,
     // 窗口是否可以改变尺寸
-    maximizable: false,
-    // 禁止最大化
+    // transparent: true, // 用于设置窗口是否透明
+    // maximizable: false, // 禁止最大化
     // autoHideMenuBar:true,// 是否隐藏菜单栏
     // titleBarStyle:'hidden',// 窗口标题栏的样式
-    // backgroundColor: '#fff', // 窗口的背景颜色为十六进制值
+    // backgroundColor: '#b2b2b2', // 窗口的背景颜色为十六进制值
     webPreferences: {
-      preload: path$1.join(__dirname, "preload.mjs"),
-      nodeIntegration: true,
+      preload: path$1.join(__dirname, "index.mjs"),
+      // nodeIntegration: true, // 控制是否在渲染进程中启用Node.js集成，为true时，渲染进程可使用Node.js的API
       backgroundThrottling: false,
+      // 控制当应用在后台运行时是否限制 JavaScript 定时器
+      devTools: isDevelopment
       // 开发环境可以打开控制台
-      // devTools: isDevelopment,
-      devTools: true
     }
   });
   win.webContents.on("did-finish-load", () => {
     win == null ? void 0 : win.webContents.send("main-process-message", (/* @__PURE__ */ new Date()).toLocaleString());
-  });
-  ipcMain.on("operations", function(event, arg) {
-    const width = size.width * 0.7 > 1150 ? size.width * 0.7 : 1150;
-    const height = size.height * 0.7 > 735 ? size.height * 0.7 : 735;
-    const bw = size.width;
-    const bh = size.height;
-    switch (arg) {
-      case "newMsg":
-        win == null ? void 0 : win.flashFrame(true);
-        if (!(win == null ? void 0 : win.isVisible()) && !timer) {
-          timer = setInterval(function() {
-            count++;
-            if (count % 2 === 0) {
-              appTray.setImage(emptyUrl);
-            } else {
-              appTray.setImage(iconUrl);
-            }
-          }, 500);
-        }
-        break;
-      case "exit":
-        app.quit();
-        break;
-      case "login":
-        win == null ? void 0 : win.center();
-        break;
-      case "logout":
-        {
-          const x = parseInt((bw - 700) / 2, 10);
-          const y = parseInt((bh - 415) / 2, 10);
-          win == null ? void 0 : win.setBounds({ x, y, width: 700, height: 415 });
-        }
-        break;
-      case "min":
-        if (win == null ? void 0 : win.isVisible()) {
-          win == null ? void 0 : win.minimize();
-        }
-        break;
-      case "max":
-        {
-          const currentWindow = win == null ? void 0 : win.getContentBounds();
-          const cw = currentWindow == null ? void 0 : currentWindow.width;
-          const x = parseInt((bw - width) / 2, 10);
-          const y = parseInt((bh - height) / 2, 10);
-          if (cw >= bw) {
-            win == null ? void 0 : win.setBounds({ x, y, width: Math.round(width), height: Math.round(height) });
-          } else {
-            win == null ? void 0 : win.setSize(bw, bh);
-            win == null ? void 0 : win.center();
-          }
-        }
-        break;
-      case "hidden":
-        if (win == null ? void 0 : win.isVisible()) {
-          win == null ? void 0 : win.hide();
-        }
-        break;
-      case "screencap":
-        {
-          const cmdPath = process.env.NODE_ENV === "development" ? "public/screen/PrintScr.exe" : `${__dirname}/screen/PrintScr.exe`;
-          const screen_window = execFile(cmdPath);
-          screen_window.on("exit", function(code) {
-            if (code) {
-              win == null ? void 0 : win.webContents.paste();
-            }
-          });
-        }
-        break;
-    }
-  });
-  ipcMain.on("resize-win", (event, width, height) => {
-    win == null ? void 0 : win.setSize(width, height);
-    win == null ? void 0 : win.center();
-  });
-  win.webContents.openDevTools({
-    mode: "detach"
   });
   if (VITE_DEV_SERVER_URL) {
     win.loadURL(VITE_DEV_SERVER_URL);
@@ -323,48 +237,6 @@ app.whenReady().then(() => {
   initializeDatabase();
   createWindow();
   regsiterDatabaseHandler();
-  size = screen.getPrimaryDisplay().workAreaSize;
-  if (process.platform === "win32") {
-    appTray = new Tray(iconUrl);
-    appTray.setToolTip("客服系统");
-    const trayMenuTemplate = [
-      // {
-      //     label: '打开',
-      //     click: () => {
-      //         win.show();
-      //     }
-      // },
-      {
-        label: "退出",
-        click: () => {
-          app.quit();
-          app.quit();
-        }
-      },
-      {
-        label: "打开/关闭机器人",
-        click: () => {
-          win.webContents.send("quitMenu", false);
-        }
-      }
-    ];
-    const contextMenu = Menu.buildFromTemplate(trayMenuTemplate);
-    appTray.setContextMenu(contextMenu);
-    appTray.on("click", () => {
-      if (global.sharedObject.currentWin === "client") {
-        win.isVisible() ? win.hide() : win.show();
-      }
-      if (timer) {
-        clearInterval(timer);
-        timer = null;
-        count = 0;
-        appTray.setImage(iconUrl);
-      }
-    });
-    appTray.on("right-click", () => {
-      appTray.popUpContextMenu(trayMenuTemplate);
-    });
-  }
 });
 export {
   MAIN_DIST,

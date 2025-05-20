@@ -1,21 +1,25 @@
 <script setup lang="ts">
 const handleInsertMeesage = () => {
-	window.ipcRenderer.on('main-process-message', (_event, message) => {
-		console.log(message)
+	window.db.addMessage({
+		id: '1008611',
+		senderId: '123',
+		message: 'this is a message!'
 	})
 }
 
 const handleQueryMeesage = () => {
-	window.ipcRenderer.on('main-process-message', (_event, message) => {
-		console.log(message)
+	window.db.fetchChatData({
+		messageId: '172'
 	})
 }
 </script>
 
 <template>
 	<router-view />
-  <button @click="handleInsertMeesage">消息插入</button>
-  <button @click="handleQueryMeesage">消息查询</button>
+	<!-- <div style="margin: 10px 200px;">
+		<el-button type="success" @click="handleInsertMeesage">数据库测试消息插入</el-button>
+		<el-button type="success" @click="handleQueryMeesage">数据库测试消息查询</el-button>
+	</div> -->
 </template>
 
 <style lang="scss">
