@@ -1,8 +1,21 @@
 <script setup lang="ts">
+const handleInsertMeesage = () => {
+	window.ipcRenderer.on('main-process-message', (_event, message) => {
+		console.log(message)
+	})
+}
+
+const handleQueryMeesage = () => {
+	window.ipcRenderer.on('main-process-message', (_event, message) => {
+		console.log(message)
+	})
+}
 </script>
 
 <template>
 	<router-view />
+  <button @click="handleInsertMeesage">消息插入</button>
+  <button @click="handleQueryMeesage">消息查询</button>
 </template>
 
 <style lang="scss">
