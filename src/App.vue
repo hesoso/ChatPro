@@ -1,5 +1,17 @@
 <script setup lang="ts">
 import HelloWorld from './components/HelloWorld.vue'
+
+const handleInsertMeesage = () => {
+  window.ipcRenderer.on('main-process-message', (_event, message) => {
+    console.log(message)
+  })
+}
+
+const handleQueryMeesage = () => {
+  window.ipcRenderer.on('main-process-message', (_event, message) => {
+    console.log(message)
+  })
+}
 </script>
 
 <template>
@@ -12,6 +24,8 @@ import HelloWorld from './components/HelloWorld.vue'
     </a>
   </div>
   <HelloWorld msg="Vite + Vue" />
+  <button @click="handleInsertMeesage">消息插入</button>
+  <button @click="handleQueryMeesage">消息查询</button>
 </template>
 
 <style scoped>
