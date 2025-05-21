@@ -1,0 +1,12 @@
+@forward 'element-plus/theme-chalk/src/common/var.scss' with (
+  $colors: (
+    'primary': (
+      'base': #3686FF
+    ),
+  ),
+  $common-component-size: (
+    'large': 50px,
+    'default': 32px,
+    'small': 24px,
+  ),
+);

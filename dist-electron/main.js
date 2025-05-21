@@ -178,15 +178,31 @@ const regsiterDatabaseHandler = () => {
     }
   });
 };
+function registerBridgeHandler() {
+  ipcMain.on("bridge:minimize", () => {
+    console.log("Bridge minimize");
+    const focusedWindow = BrowserWindow.getFocusedWindow();
+    focusedWindow == null ? void 0 : focusedWindow.minimize();
+  });
+  ipcMain.on("bridge:closeWindow", () => {
+    console.log("Bridge closed");
+    const focusedWindow = BrowserWindow.getFocusedWindow();
+    focusedWindow == null ? void 0 : focusedWindow.close();
+  });
+}
 const __dirname = path$1.dirname(fileURLToPath(import.meta.url));
 process.env.APP_ROOT = path$1.join(__dirname, "..");
-const VITE_DEV_SERVER_URL = process.env["VITE_DEV_SERVER_URL"];
+const VITE_DEV_SERVER_URL = "http://localhost:5173";
 const MAIN_DIST = path$1.join(process.env.APP_ROOT, "dist-electron");
 const RENDERER_DIST = path$1.join(process.env.APP_ROOT, "dist");
-process.env.VITE_PUBLIC = VITE_DEV_SERVER_URL ? path$1.join(process.env.APP_ROOT, "public") : RENDERER_DIST;
+process.env.VITE_PUBLIC = path$1.join(process.env.APP_ROOT, "public");
 const isDevelopment = process.env.NODE_ENV !== "production";
 let win;
 function createWindow() {
+  if (win) {
+    win.destroy();
+    win = null;
+  }
   win = new BrowserWindow({
     icon: path$1.join(process.env.VITE_PUBLIC, "logo.ico"),
     width: 1200,
@@ -212,10 +228,11 @@ function createWindow() {
   win.webContents.on("did-finish-load", () => {
     win == null ? void 0 : win.webContents.send("main-process-message", (/* @__PURE__ */ new Date()).toLocaleString());
   });
-  if (VITE_DEV_SERVER_URL) {
+  win.on("close", () => {
+    win == null ? void 0 : win.webContents.closeDevTools();
+  });
+  {
     win.loadURL(VITE_DEV_SERVER_URL);
-  } else {
-    win.loadFile(path$1.join(RENDERER_DIST, "index.html"));
   }
 }
 app.on("window-all-closed", () => {
@@ -237,6 +254,14 @@ app.whenReady().then(() => {
   initializeDatabase();
   createWindow();
   regsiterDatabaseHandler();
+  registerBridgeHandler();
+  const devToolsPath = path$1.join(
+    __dirname,
+    "../devtools/vue-devtool"
+  );
+  win == null ? void 0 : win.webContents.session.loadExtension(devToolsPath).then((ex) => {
+    console.log(ex);
+  });
 });
 export {
   MAIN_DIST,

@@ -23,11 +23,14 @@ const handleQueryMeesage = () => {
 </template>
 
 <style lang="scss">
-@import './styles/reset.scss';
-@import './styles/normalize.scss';
-@import './styles/common.scss';
-@import './styles/my_element_ui.scss';
-@import './styles/qqface.scss';
-@import '@/assets/iconfont/iconfont.css';
-@import '@/assets/font-awesome/css/font-awesome.css';
+@use "@/styles/common.scss";
+@use '@/styles/reset.scss';
+@use '@/styles/normalize.scss';
+@use '@/styles/qqface.scss';
+@use '@/assets/iconfont/iconfont.css';
+@use '@/assets/font-awesome/css/font-awesome.css';
+
+#app {
+	height: 100%;
+}
 </style>

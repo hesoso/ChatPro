@@ -28,4 +28,9 @@ interface Window {
     addMessage: <T>(args: T) => boolean
     fetchChatData: <T>(args: T) => []
   }
+  bridge: {
+    toggleDevTool: () => void,
+    minimize: () => void,
+    closeWindow: () => void,
+  }
 }

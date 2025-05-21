@@ -26,6 +26,13 @@ electron.contextBridge.exposeInMainWorld("db", {
    */
   getMessages: (params) => electron.ipcRenderer.invoke(DB_EVENTS.GetMessages, params)
 });
+electron.contextBridge.exposeInMainWorld("bridge", {
+  toggleDevTool: () => {
+    console.log("toggleDevTool");
+  },
+  minimize: () => electron.ipcRenderer.send("bridge:minimize"),
+  closeWindow: () => electron.ipcRenderer.send("bridge:closeWindow")
+});
 electron.contextBridge.exposeInMainWorld("ipcRenderer", {
   on(...args) {
     const [channel, listener] = args;

@@ -1,16 +1,21 @@
-import { app, BrowserWindow, screen } from 'electron'
+import { app, BrowserWindow } from 'electron'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
 
+
+
 import { initializeDatabase, getDB } from '../database/index'
 import { regsiterDatabaseHandler } from './register.database'
+import { registerBridgeHandler } from './register.bridge.handler'
+
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 process.env.APP_ROOT = path.join(__dirname, '..')
 
 // 使用 ['ENV_NAME'] 的方式访问环境变量，避免 vite:define 插件对 process.env.ENV_NAME 的静态替换问题
-export const VITE_DEV_SERVER_URL = process.env['VITE_DEV_SERVER_URL']
+// export const VITE_DEV_SERVER_URL = process.env['VITE_DEV_SERVER_URL']
+export const VITE_DEV_SERVER_URL = 'http://localhost:5173'
 export const MAIN_DIST = path.join(process.env.APP_ROOT, 'dist-electron')
 export const RENDERER_DIST = path.join(process.env.APP_ROOT, 'dist')
 
@@ -21,6 +26,10 @@ const isDevelopment = process.env.NODE_ENV !== 'production'
 let win: BrowserWindow | null
 
 function createWindow() {
+  if (win) {
+    win.destroy()
+    win = null
+  }
   win = new BrowserWindow({
     icon: path.join(process.env.VITE_PUBLIC, 'logo.ico'),
     width: 1200,
@@ -43,6 +52,9 @@ function createWindow() {
   // 在窗口创建后可以在这里添加自定义逻辑，比如设置窗口菜单、注册全局快捷键等
   win.webContents.on('did-finish-load', () => {
     win?.webContents.send('main-process-message', (new Date).toLocaleString())
+  })
+  win.on('close', () => {
+    win?.webContents.closeDevTools()
   })
 
   if (VITE_DEV_SERVER_URL) {
@@ -78,4 +90,15 @@ app.whenReady().then(() => {
   createWindow()
   // 注册数据库处理事件
   regsiterDatabaseHandler()
+  // 注册桥方法
+  registerBridgeHandler()
+  // 安装vuedevtool
+  const devToolsPath = path.join(
+      __dirname,
+      '../devtools/vue-devtool'
+  )
+  win?.webContents.session.loadExtension(devToolsPath).then((ex) => {
+    console.log(ex)
+    // win?.webContents.openDevTools()
+  })
 })

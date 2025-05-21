@@ -1,32 +1,19 @@
 <script setup>
-import {computed} from "vue";
+import { computed } from "vue";
 
 const props = defineProps({
-	iconClass: {
+	name: {
 		required: true,
-	},
-	className: {
-		default: ''
 	}
 })
 
-function isExternalHandler(path) {
-	return /^(https?:|mailto:|tel:)/.test(path)
-}
+const iconName = computed(() =>  `#icon-${props.name}`)
 
-const isExternal = computed(() => isExternalHandler(props.iconClass))
-const iconName = computed(() =>  `#icon-${props.iconClass}`)
-const svgClass = computed(() =>  props.className ? 'svg-icon ' + props.className : 'svg-icon')
-const styleExternalIcon = computed(() => ({
-	mask: `url(${props.iconClass}) no-repeat 50% 50%`,
-	'-webkit-mask': `url(${props.iconClass}) no-repeat 50% 50%`
-}))
 
 </script>
 
 <template>
-  <div v-if="isExternal" :style="styleExternalIcon" class="svg-external-icon svg-icon" v-on="$listeners" />
-  <svg v-else :class="svgClass" aria-hidden="true" v-on="$listeners">
+  <svg class="svg-icon" aria-hidden="true" v-on="$listeners">
     <use :xlink:href="iconName" />
   </svg>
 </template>
@@ -35,16 +22,13 @@ const styleExternalIcon = computed(() => ({
 .svg-icon {
   width: 1em;
   height: 1em;
-  min-width: 1em;
-  min-height: 1em;
   vertical-align: -0.15em;
-  fill: currentColor;
+  fill: #333;
   overflow: hidden;
 }
-
 .svg-external-icon {
-  background-color: currentColor;
-  mask-size: cover!important;
-  display: inline-block;
+	background-color: #333333;
+	mask-size: cover!important;
+	display: inline-block;
 }
 </style>
