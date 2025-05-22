@@ -1,4 +1,5 @@
 import { getDB } from "../db";
+import { createUser } from "./user";
 
 export interface NewMessage {
     session_id: string;

@@ -27,7 +27,7 @@ interface QueryChatDataParams {
 }
 
 
-contextBridge.exposeInMainWorld('db', {
+contextBridge.exposeInMainWorld('databaseApi', {
     /**
      * 根据 wxid (作为 sessionId) 查询聊天数据。
      * @param params - 包含 wxid 和可选分页参数的对象。

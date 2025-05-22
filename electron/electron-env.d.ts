@@ -24,7 +24,7 @@ declare namespace NodeJS {
 // Used in Renderer process, expose in `preload.ts`
 interface Window {
   ipcRenderer: import('electron').IpcRenderer
-  db: {
+  databaseApi: {
     addMessage: <T>(args: T) => boolean
     fetchChatData: <T>(args: T) => []
   }

@@ -34,13 +34,13 @@ function createWindow() {
     icon: path.join(process.env.VITE_PUBLIC, 'logo.ico'),
     width: 1200,
     height: 760,
-    frame: false, // 设置为 false 时用于创建无边框窗口
-    resizable: false, // 窗口是否可以改变尺寸
+    // frame: false, // 设置为 false 时用于创建无边框窗口
+    // resizable: false, // 窗口是否可以改变尺寸
     // transparent: true, // 用于设置窗口是否透明
-    // maximizable: false, // 禁止最大化
+    maximizable: false, // 禁止最大化
     // autoHideMenuBar:true,// 是否隐藏菜单栏
     // titleBarStyle:'hidden',// 窗口标题栏的样式
-    // backgroundColor: '#b2b2b2', // 窗口的背景颜色为十六进制值
+    // backgroundColor: '#EFF0F4', // 窗口的背景颜色为十六进制值
     webPreferences: {
       preload: path.join(__dirname, 'index.mjs'),
       // nodeIntegration: true, // 控制是否在渲染进程中启用Node.js集成，为true时，渲染进程可使用Node.js的API
@@ -92,13 +92,6 @@ app.whenReady().then(() => {
   regsiterDatabaseHandler()
   // 注册桥方法
   registerBridgeHandler()
-  // 安装vuedevtool
-  const devToolsPath = path.join(
-      __dirname,
-      '../devtools/vue-devtool'
-  )
-  win?.webContents.session.loadExtension(devToolsPath).then((ex) => {
-    console.log(ex)
-    // win?.webContents.openDevTools()
-  })
+  // 打开调试工具
+  win?.webContents.openDevTools()
 })

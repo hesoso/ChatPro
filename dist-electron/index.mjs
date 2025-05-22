@@ -6,7 +6,7 @@ var DB_EVENTS = /* @__PURE__ */ ((DB_EVENTS2) => {
   DB_EVENTS2["GetChatData"] = "db:query-chat-data";
   return DB_EVENTS2;
 })(DB_EVENTS || {});
-electron.contextBridge.exposeInMainWorld("db", {
+electron.contextBridge.exposeInMainWorld("databaseApi", {
   /**
    * 根据 wxid (作为 sessionId) 查询聊天数据。
    * @param params - 包含 wxid 和可选分页参数的对象。
