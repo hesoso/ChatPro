@@ -2,7 +2,7 @@ import { createApp } from 'vue'
 import { router } from './router'
 
 import App from './App.vue'
-import SvgIcon from './components/SvgIcon/index.vue'
+import SvgIcon from './components/SvgIcon.vue'
 
 import 'virtual:svg-icons-register'
 
