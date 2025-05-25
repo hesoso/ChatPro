@@ -22,6 +22,7 @@ export const CREATE_USERS_TABLE_SQL = `
         nickname TEXT,
         avatar_url TEXT,
         remark TEXT, -- 备注
+        type BOOLEAN DEFAULT 0, -- 0 表示其他用户 1 表示当前登录账号
         created_at INTEGER NOT NULL DEFAULT (STRFTIME('%s', 'now') * 1000) -- 存储为 Unix 毫秒时间戳
     );
 `;
@@ -55,7 +56,7 @@ export const CREATE_MESSAGES_SESSION_TIMESTAMP_INDEX_SQL = 'CREATE INDEX IF NOT 
 export const CREATE_SESSIONS_TABLE_SQL = `
     CREATE TABLE IF NOT EXISTS sessions (
         id TEXT PRIMARY KEY, -- 会话的唯一标识，例如 user_wxid 或 group_id
-        type TEXT NOT NULL, -- 'user' (单聊) or 'group' (群聊)
+        type INTEGER NOT NULL, -- 0 (单聊) or 1 (群聊)
         name TEXT, -- 会话名称 (好友昵称或群名称)
         avatar_url TEXT, -- 会话头像
         last_message_preview TEXT, -- 最后一条消息预览
@@ -75,13 +76,12 @@ export const CREATE_SESSIONS_UPDATED_AT_INDEX_SQL = 'CREATE INDEX IF NOT EXISTS 
 // 创建群组表
 export const CREATE_GROUPS_TABLE_SQL = `
     CREATE TABLE IF NOT EXISTS groups (
-        id TEXT PRIMARY KEY, -- 群ID，例如群wxid
+        id TEXT PRIMARY KEY, -- 群ID
         name TEXT,
         avatar_url TEXT,
         owner_id_ref TEXT, -- 群主wxid
         member_count INTEGER,
         announcement TEXT, -- 群公告
         created_at INTEGER NOT NULL DEFAULT (STRFTIME('%s', 'now') * 1000) -- 存储为 Unix 毫秒时间戳
-        -- 还可以有 group_members 表来存储群成员关系
     );
 `;

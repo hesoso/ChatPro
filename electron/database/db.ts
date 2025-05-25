@@ -29,10 +29,10 @@ export function initializeDatabase(): void {
     }
 
     console.log('数据库已成功创建============>', dbDir)
-    // verbose 会在控制台打印执行的 SQL 语句，方便调试
+    // verbose 在控制台打印执行的 SQL 语句，方便调试
     db = new Database(dbPath, { verbose: console.log });
 
-    // 如果你使用外键，建议开启
+    // 开启外键约束
     db.exec(PRAGMA_FOREIGN_KEYS_ON);
 
 
@@ -55,7 +55,7 @@ export function getDB(): DB {
         // 但为健壮性考虑，可以再次尝试初始化或抛出错误
         console.warn('数据库尚未初始化，正在尝试再次初始化...');
         initializeDatabase();
-        if (!db) { // 如果再次初始化失败
+        if (!db) {
             throw new Error('数据库实例尚未初始化，无法获取。请确保 initializeDatabase() 已成功调用。');
         }
     }

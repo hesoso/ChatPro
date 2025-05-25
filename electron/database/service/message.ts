@@ -1,9 +1,12 @@
+import { Database } from 'better-sqlite3';
 import { getDB } from "../db";
 import { createUser } from "./user";
+import { createSession } from "./session";
+import { checkRecordExists } from '../helper/check'
 
 export interface NewMessage {
     session_id: string;
-    sender_id_ref?: string | null; // 可以是机器人等非用户ID
+    sender_id_ref: string; // 可以是机器人等非用户ID
     receiver_id_ref?: string | null; // 可以是群ID
     message_type?: string;
     content: string;
@@ -20,7 +23,6 @@ export interface Message extends NewMessage {
     status: string;
 }
 
-// ---- 数据库操作函数 ----
 
 /**
  * 添加一条新的聊天消息。
@@ -28,9 +30,20 @@ export interface Message extends NewMessage {
  * @returns 插入消息的 id 和 timestamp。
  * @throws 如果插入失败，则抛出错误。
  */
-export function addMessage(messageData: NewMessage): { id: number; timestamp: number } {
-    const dbInstance = getDB();
-    const timestamp = Date.now(); // 生成当前时间的 Unix 毫秒时间戳
+export function addMessage(messageData: NewMessage, db: Database = getDB()): { id: number; timestamp: number } {
+
+    // 用户表是否存在该消息的用户记录，如果不存在，则创建该用户
+    if (checkRecordExists('users', 'wxid', messageData.sender_id_ref)) {
+        // createUser({
+        //     wxid: message.sender_id_ref,
+        //     nickname?: string | null;
+        //     avatar_url?: string | null;
+        //     remark?: string | null;
+        //     created_at?: number;
+        // })
+    }
+
+    const timestamp = Date.now();
     const sql = `
         INSERT INTO messages (
             session_id, sender_id_ref, receiver_id_ref, message_type, 
@@ -43,7 +56,7 @@ export function addMessage(messageData: NewMessage): { id: number; timestamp: nu
     `;
 
     try {
-        const stmt = dbInstance.prepare(sql);
+        const stmt = db.prepare(sql);
         const result = stmt.run({
             ...messageData,
             message_type: messageData.message_type || 'text', // 默认消息类型
