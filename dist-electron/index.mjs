@@ -31,7 +31,8 @@ electron.contextBridge.exposeInMainWorld("bridge", {
     console.log("toggleDevTool");
   },
   minimize: () => electron.ipcRenderer.send("bridge:minimize"),
-  closeWindow: () => electron.ipcRenderer.send("bridge:closeWindow")
+  closeWindow: () => electron.ipcRenderer.send("bridge:closeWindow"),
+  toggleMaximize: () => electron.ipcRenderer.send("bridge:toggleMaximize")
 });
 electron.contextBridge.exposeInMainWorld("ipcRenderer", {
   on(...args) {

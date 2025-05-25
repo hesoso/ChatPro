@@ -184,6 +184,11 @@ function registerBridgeHandler() {
     const focusedWindow = BrowserWindow.getFocusedWindow();
     focusedWindow == null ? void 0 : focusedWindow.minimize();
   });
+  ipcMain.on("bridge:toggleMaximize", () => {
+    const focusedWindow = BrowserWindow.getFocusedWindow();
+    const isMax = focusedWindow == null ? void 0 : focusedWindow.isMaximized();
+    isMax ? focusedWindow == null ? void 0 : focusedWindow.unmaximize() : focusedWindow == null ? void 0 : focusedWindow.maximize();
+  });
   ipcMain.on("bridge:closeWindow", () => {
     console.log("Bridge closed");
     const focusedWindow = BrowserWindow.getFocusedWindow();
@@ -211,7 +216,8 @@ function createWindow() {
     // 设置为 false 时用于创建无边框窗口
     resizable: false,
     // 窗口是否可以改变尺寸
-    // transparent: true, // 用于设置窗口是否透明
+    transparent: false,
+    // 用于设置窗口是否透明
     // maximizable: false, // 禁止最大化
     // autoHideMenuBar:true,// 是否隐藏菜单栏
     // titleBarStyle:'hidden',// 窗口标题栏的样式

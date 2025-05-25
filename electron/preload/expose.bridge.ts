@@ -4,5 +4,6 @@ contextBridge.exposeInMainWorld('bridge', {
     console.log('toggleDevTool')
   },
   minimize: () => ipcRenderer.send('bridge:minimize'),
-  closeWindow: () => ipcRenderer.send('bridge:closeWindow')
+  closeWindow: () => ipcRenderer.send('bridge:closeWindow'),
+  toggleMaximize: () => ipcRenderer.send('bridge:toggleMaximize')
 })

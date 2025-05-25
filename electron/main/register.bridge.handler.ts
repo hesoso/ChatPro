@@ -10,6 +10,14 @@ export function registerBridgeHandler() {
     focusedWindow?.minimize()
   })
   /**
+   * 最大化当前窗口
+   */
+  ipcMain.on('bridge:toggleMaximize', () => {
+    const focusedWindow = BrowserWindow.getFocusedWindow()
+    const isMax = focusedWindow?.isMaximized()
+    isMax ? focusedWindow?.unmaximize() : focusedWindow?.maximize()
+  })
+  /**
    *  关闭当前窗口
    */
   ipcMain.on('bridge:closeWindow', () => {

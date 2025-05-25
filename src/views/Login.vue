@@ -1,6 +1,11 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useRouter } from 'vue-router';
+import { useBridge } from '../hooks/useBridge.ts'
 import PhoneCode from '@/components/PhoneCode.vue'
+
+const bridgeHandlers = useBridge()
+const router = useRouter()
 
 enum FORM_TYPE {
   LOGIN = 'login',
@@ -8,11 +13,11 @@ enum FORM_TYPE {
   FORGOT_PASSWORD = 'forgot-password',
 }
 
-const successFlag = ref(true)
+const successFlag = ref(false)
 const loginLoading = ref(false)
 const showProvision = ref(false)
 const agreement = ref(false)
-const formType = ref(FORM_TYPE.REGISTER)
+const formType = ref(FORM_TYPE.LOGIN)
 
 const loginForm = ref({
   name: '',
@@ -30,6 +35,7 @@ const rules = ref({
 })
 
 const submitForm = () => {
+  router.push('/workbench/chat')
 }
 
 const toLogin = () => {
@@ -39,10 +45,10 @@ const toLogin = () => {
 
 
 const minimizeWindow = () => {
-  window.bridge.minimize()
+  bridgeHandlers.minimize()
 }
 const closeElectron = () => {
-  window.bridge.closeWindow()
+  bridgeHandlers.closeWindow()
 }
 </script>
 
@@ -50,7 +56,7 @@ const closeElectron = () => {
 
   <div class="login-page drag-area">
     <div class="electron-menu">
-      <svg-icon class="icon-btn no-drag-area" style="width: 0.5em" name="min" @click="minimizeWindow"></svg-icon>
+      <svg-icon class="icon-btn no-drag-area" style="margin-right: 10px" name="min" @click="minimizeWindow"></svg-icon>
       <svg-icon class="icon-btn no-drag-area" name="close" @click="closeElectron"></svg-icon>
     </div>
     <div class="login-form-detail">
@@ -98,7 +104,7 @@ const closeElectron = () => {
               :loading="loginLoading"
               :disabled="loginLoading"
               class="login-btn no-drag-area"
-              @click="submitForm('ruleForm')"
+              @click="submitForm"
             >
               登 录
             </el-button>
@@ -167,7 +173,7 @@ const closeElectron = () => {
               :loading="loginLoading"
               :disabled="loginLoading"
               class="login-btn no-drag-area"
-              @click="submitForm('ruleForm')"
+              @click="submitForm"
             >
               登 录
             </el-button>
@@ -236,7 +242,7 @@ const closeElectron = () => {
               :loading="loginLoading"
               :disabled="loginLoading"
               class="login-btn no-drag-area"
-              @click="submitForm('ruleForm')"
+              @click="submitForm"
             >
               重置密码
             </el-button>
@@ -305,7 +311,7 @@ const closeElectron = () => {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  font-size: 30px;
+  font-size: 15px;
   padding: 0 10px;
 }
 
