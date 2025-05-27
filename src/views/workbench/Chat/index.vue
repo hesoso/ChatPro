@@ -2,8 +2,14 @@
 import ConversationMode from './components/ConversationMode.vue'
 import Robot from './components/Robot.vue'
 import ConversationList from './components/ConversationList.vue'
+import ChatInput from '@/views/workbench/Chat/components/ChatInput.vue'
+import ChatView from '@/views/workbench/Chat/components/ChatView.vue'
+import ConversationItem from '@/views/workbench/Chat/components/ConversationItem.vue'
+import { ref } from 'vue'
 
-
+const messageList = ref(new Array(30000).fill({
+  id: Symbol(),
+}))
 </script>
 
 <template>
@@ -16,7 +22,12 @@ import ConversationList from './components/ConversationList.vue'
         <ConversationList></ConversationList>
       </div>
     </div>
-    <div class="right-wrap">右边</div>
+    <div class="right-wrap">
+      <div class="layout-qz">
+        <ChatView></ChatView>
+      </div>
+      <ChatInput></ChatInput>
+    </div>
   </div>
 </template>
 
@@ -34,11 +45,18 @@ import ConversationList from './components/ConversationList.vue'
   }
   .right-wrap {
     flex: 1;
+    height: 100%;
     border-left: 1px solid #EDEDED;
+    display: flex;
+    flex-direction: column;
+    background: #F7F7F7;
   }
 }
 .layout-qz {
   flex: 1;
   min-height: 0;
+}
+.scroller {
+  height: 400px;
 }
 </style>

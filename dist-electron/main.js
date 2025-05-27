@@ -197,10 +197,10 @@ function registerBridgeHandler() {
 }
 const __dirname = path$1.dirname(fileURLToPath(import.meta.url));
 process.env.APP_ROOT = path$1.join(__dirname, "..");
-const VITE_DEV_SERVER_URL = "http://localhost:5173";
+const VITE_DEV_SERVER_URL = process.env["VITE_DEV_SERVER_URL"];
 const MAIN_DIST = path$1.join(process.env.APP_ROOT, "dist-electron");
 const RENDERER_DIST = path$1.join(process.env.APP_ROOT, "dist");
-process.env.VITE_PUBLIC = path$1.join(process.env.APP_ROOT, "public");
+process.env.VITE_PUBLIC = VITE_DEV_SERVER_URL ? path$1.join(process.env.APP_ROOT, "public") : RENDERER_DIST;
 const isDevelopment = process.env.NODE_ENV !== "production";
 let win;
 function createWindow() {
@@ -237,8 +237,10 @@ function createWindow() {
   win.on("close", () => {
     win == null ? void 0 : win.webContents.closeDevTools();
   });
-  {
+  if (VITE_DEV_SERVER_URL) {
     win.loadURL(VITE_DEV_SERVER_URL);
+  } else {
+    win.loadFile(path$1.join(RENDERER_DIST, "index.html"));
   }
 }
 app.on("window-all-closed", () => {
