@@ -1,3 +1,7 @@
+:root{
+  --mx-menu-hover-backgroud: #E3EBFF !important;
+}
+
 .drag-area {
   -webkit-app-region: drag;
 }
@@ -332,4 +336,11 @@
   top: 50%;
   right: 12px;
   transform: translateY(-50%);
+}
+.custom-tree-node {
+  flex: 1;
+}
+
+.red {
+  color: #F54A45;
 }

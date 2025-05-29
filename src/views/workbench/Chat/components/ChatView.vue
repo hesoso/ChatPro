@@ -1,9 +1,13 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { nextTick, ref } from 'vue'
 import MessageItem from '@/views/workbench/Chat/components/MessageItem.vue'
 const messageList = ref(new Array(20000).fill(0))
 
+const scroller = ref<HTMLElement>(document.body)
 
+nextTick(() => {
+  scroller.value.scrollToBottom()
+})
 </script>
 
 <template>
@@ -12,8 +16,9 @@ const messageList = ref(new Array(20000).fill(0))
       全部消息
     </div>
     <DynamicScroller
+      ref="scroller"
       :items="messageList"
-      :min-item-size="54"
+      :min-item-size="64"
       class="scroll"
     >
       <template v-slot="{ item, index, active }">
@@ -25,7 +30,7 @@ const messageList = ref(new Array(20000).fill(0))
         ]"
           :data-index="index"
         >
-          <MessageItem></MessageItem>
+          <MessageItem :index="index"></MessageItem>
         </DynamicScrollerItem>
       </template>
     </DynamicScroller>

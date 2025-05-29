@@ -17,12 +17,19 @@ const robotList = ref([
     robotName: '机器人3',
   }
 ])
+
+const curRobot = ref(robotList.value[0])
+
+
+const handleRobotChange = (robot) => {
+  curRobot.value = robot
+}
 </script>
 
 <template>
 <ul class="robot-list">
-  <li v-for="item in robotList" :key="item.id" class="robot-item">
-    <div class="avatar-wrap active">
+  <li v-for="item in robotList" :key="item.id" class="robot-item" :class="[{active: item.id === curRobot.id }]" @click="handleRobotChange(item)">
+    <div class="avatar-wrap">
       <img src="@/assets/images/weixin.png" alt="" class="avatar">
       <img src="@/assets/images/qw_.png" alt="" class="avatar-icon">
     </div>
@@ -42,6 +49,7 @@ const robotList = ref([
     font-size: 12px;
     opacity: 0.5;
     text-align: center;
+    cursor: pointer;
     .avatar-wrap {
       width: 40px;
       height: 40px;
@@ -67,6 +75,9 @@ const robotList = ref([
     }
     &.active {
       opacity: 1;
+      .avatar-wrap {
+        background: #fff;
+      }
     }
   }
 }
