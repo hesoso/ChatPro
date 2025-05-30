@@ -342,5 +342,28 @@
 }
 
 .red {
-  color: #F54A45;
+  color: #F54A45 !important;
+}
+.empty-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  height: 100%;
+  img {
+    width: 50%;
+  }
+  .text {
+    font-weight: 400;
+    font-size: 16px;
+    color: #666666;
+  }
+}
+.el-dialog {
+  padding: 0;
+  border-radius: 15px !important;
+}
+.el-dialog__header {
+  padding: 12px 20px;
+  border-bottom: 1px solid #DCDCDC;
 }

@@ -1,18 +1,26 @@
 <script setup lang="ts">
 import { nextTick, ref } from 'vue'
 import MessageItem from '@/views/workbench/Chat/components/MessageItem.vue'
+
+const props = defineProps({
+  mode: String
+})
+
+
 const messageList = ref(new Array(20000).fill(0))
 
 const scroller = ref<HTMLElement>(document.body)
 
 nextTick(() => {
-  scroller.value.scrollToBottom()
+  if (props.mode !== 'history') {
+    scroller.value.scrollToBottom()
+  }
 })
 </script>
 
 <template>
   <div class="chat-view">
-    <div class="chat-title-wrap">
+    <div v-if="mode !== 'history'" class="chat-title-wrap">
       全部消息
     </div>
     <DynamicScroller
@@ -34,7 +42,7 @@ nextTick(() => {
         </DynamicScrollerItem>
       </template>
     </DynamicScroller>
-    <div class="reply">
+    <div v-if="mode !== 'history'" class="reply">
       回复至<span class="nick">小龙女</span>
     </div>
   </div>

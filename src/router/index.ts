@@ -3,7 +3,7 @@ import { createWebHashHistory, createRouter } from 'vue-router'
 import Login from '@/views/Login.vue'
 import Workbench from '@/views/workbench/index.vue'
 import Chat from '@/views/workbench/Chat/index.vue'
-import History from '@/views/workbench/History.vue'
+import History from '@/views/workbench/History/index.vue'
 import Settings from '@/views/workbench/settings.vue'
 
 const routes = [
