@@ -23,10 +23,10 @@ const navList = computed(() => {
     iconName: route.name === 'history' ? 'history-active' : 'history',
   }, {
     id: Symbol(),
-    path: '/workbench/settings',
+    path: '/workbench/settings/monitor',
     name: 'chat',
-    active: route.name === 'settings',
-    iconName: route.name === 'settings' ? 'settings1-active' : 'settings1',
+    active: route.meta.activeIcon === 'settings',
+    iconName: route.meta.activeIcon === 'settings' ? 'settings1-active' : 'settings1',
   }]
 })
 
