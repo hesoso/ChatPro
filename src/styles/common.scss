@@ -1,5 +1,8 @@
+@import "./var.scss";
+
 :root{
   --mx-menu-hover-backgroud: #E3EBFF !important;
+  --mx-menu-placeholder-width: 7px !important;
 }
 
 .drag-area {
@@ -453,7 +456,27 @@
   outline: none;
   border: none;
 }
+.input {
+  .el-input__wrapper, .el-select__wrapper {
+    background: #F6F6F6;
+    box-shadow: none !important;
+  }
+}
 
 .el-dialog__footer{
   border-top: 1px solid #E5E5E5;
+}
+.btn-text-margin {
+  margin: 0 15px;
+}
+
+.link {
+  color: $cp-main-color;
+  cursor: pointer;
+}
+
+.menu-text {
+  font-weight: 400;
+  font-size: 14px;
+  color: #333333;
 }

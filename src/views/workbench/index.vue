@@ -2,7 +2,9 @@
 import { useRoute, useRouter } from 'vue-router';
 import { useBridge } from '../../hooks/useBridge.ts'
 import { computed } from 'vue'
+import { useLayoutStore } from '@/store/useLayoutStore.ts'
 
+const layoutStore = useLayoutStore()
 const bridgeHandlers = useBridge()
 const route = useRoute()
 const router = useRouter()
@@ -45,7 +47,7 @@ const navHandler = (item: NavItem) => {
     </div>
     <div class="options-wrap layout-qz no-drag-area">
       <svg-icon name="settings"></svg-icon>
-      <svg-icon style="margin-right: 30px" name="shrink"></svg-icon>
+      <svg-icon style="margin-right: 30px" name="shrink" @click="layoutStore.toggleSpeechArtPanel"></svg-icon>
       <svg-icon name="min" @click="bridgeHandlers.minimize"></svg-icon>
       <svg-icon name="max" @click="bridgeHandlers.toggleMaximize"></svg-icon>
       <svg-icon name="close" @click="bridgeHandlers.closeWindow"></svg-icon>

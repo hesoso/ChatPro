@@ -1,6 +1,10 @@
 <script setup lang="ts">
 import { nextTick, ref } from 'vue'
 import MessageItem from '@/views/workbench/Chat/components/MessageItem.vue'
+import { ConversationStatusEnum } from '@/enums/conversation.ts'
+import { useConversationStore } from '@/store/useConversationStore.ts'
+
+const conversationStore = useConversationStore()
 
 const props = defineProps({
   mode: String
@@ -24,6 +28,7 @@ nextTick(() => {
       全部消息
     </div>
     <DynamicScroller
+      v-if="conversationStore.conversationStatus !== ConversationStatusEnum.wait"
       ref="scroller"
       :items="messageList"
       :min-item-size="64"
@@ -42,7 +47,7 @@ nextTick(() => {
         </DynamicScrollerItem>
       </template>
     </DynamicScroller>
-    <div v-if="mode !== 'history'" class="reply">
+    <div v-if="mode !== 'history' && conversationStore.conversationStatus !== ConversationStatusEnum.wait" class="reply">
       回复至<span class="nick">小龙女</span>
     </div>
   </div>

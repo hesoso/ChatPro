@@ -2,6 +2,10 @@
 import { ref } from 'vue'
 import SearchInput from '@/components/SearchInput.vue'
 import CreateNewConversation from '@/views/workbench/Chat/components/CreateNewConversation.vue'
+import { ConversationModeEnum } from '@/enums/conversation.ts'
+import { useConversationStore } from '@/store/useConversationStore.ts'
+
+const conversationStore = useConversationStore()
 
 const showSearch = ref(false)
 const showCreateNewConversation = ref(false)
@@ -10,19 +14,19 @@ const handleCancel = () => {
   showSearch.value = false
 }
 
-const curModeType = ref('type1')
 const curGroupList = ref(['group1', 'group2', 'group3'])
 
 const modeList = ref([{
-  type: 'type1',
+  type: ConversationModeEnum.independent,
   name: '独立'
 }, {
-  type: 'type2',
+  type: ConversationModeEnum.combination,
   name: '组合'
 }, {
-  type: 'type3',
+  type: ConversationModeEnum.reception,
   name: '接待'
 }])
+
 const groupList = ref([{
   type: 'group1',
   name: '好友'
@@ -37,6 +41,10 @@ const groupList = ref([{
 const curGroupListHanlder = (type: String) => {
   const index = curGroupList.value.indexOf(type)
   index > -1 ? curGroupList.value.splice(index, 1) : curGroupList.value.push(type)
+}
+
+const handleChangeMode = (item) => {
+  conversationStore.setConversationMode(item.type)
 }
 
 </script>
@@ -54,8 +62,8 @@ const curGroupListHanlder = (type: String) => {
             <div class="mode-section">
               <p class="title">会话模式</p>
               <div class="radio-wrap">
-                <span v-for="item in modeList" class="radio-item" :class="[{active: item.type === curModeType}]"
-                      @click="curModeType = item.type">{{ item.name }}</span>
+                <span v-for="item in modeList" class="radio-item" :class="[{active: conversationStore.conversationMode === item.type}]"
+                      @click="handleChangeMode(item)">{{ item.name }}</span>
               </div>
             </div>
             <div class="mode-section">

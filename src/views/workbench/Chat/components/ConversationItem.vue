@@ -1,34 +1,118 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, h } from 'vue'
 import { MenuOptions } from '@imengyu/vue3-context-menu'
+import { ElCheckbox, ElMessage, ElMessageBox } from 'element-plus'
+import { showContextMenu } from '@/components/ContextMenu'
 
 const props = defineProps({
-  conversation: [Number, String]
+  conversation: [Number, String],
+  active: Boolean
 })
+const emits = defineEmits(['select'])
 
-const show = ref(false);
+
+const show = ref(false)
 const options = ref<MenuOptions>({
   zIndex: 3,
   minWidth: 0,
   x: 500,
   y: 200
-});
+})
 
-function onMenuClick() {
-  alert('You clicked menu item ' + props.conversation)
+
+const stickTop = () => {
+  alert('置顶')
 }
-function onContextMenu(e : MouseEvent) {
-  e.preventDefault();
-  //Show component mode menu
-  show.value = true;
-  options.value.x = e.x;
-  options.value.y = e.y;
+const notDisturb = () => {
+  ElMessageBox({
+      title: '温馨提醒',
+      message: h('p', {class: 'layout-rc'}, [
+        h(ElCheckbox, null, ''),
+        h('span', null, '屏蔽群【6378377192931】')
+      ]),
+      showCancelButton: true,
+      confirmButtonText: '确定',
+      cancelButtonText: '取消'
+    }
+  )
+    .then(() => {
+    })
+    .catch(() => {
+    })
+}
+const clearUnread = () => {
+  ElMessage.success('清空所有未读成功')
+}
+const delCurConversation = () => {
+  ElMessageBox.confirm(
+    '是否删除所选群？',
+    '提示',
+    {
+      confirmButtonText: '确认',
+      cancelButtonText: '取消'
+    }
+  )
+    .then(() => {
+    })
+    .catch(() => {
+    })
+}
+const delAllConversation = () => {
+  ElMessageBox.confirm(
+    '是否删除所选机器人？',
+    '提示',
+    {
+      confirmButtonText: '确认',
+      cancelButtonText: '取消'
+    }
+  )
+    .then(() => {
+    })
+    .catch(() => {
+    })
+}
+
+function onContextMenu(e: MouseEvent) {
+  // e.preventDefault()
+  // //Show component mode menu
+  // show.value = true
+  // options.value.x = e.x
+  // options.value.y = e.y
+
+
+  e.preventDefault()
+  showContextMenu({
+    event: e,
+    menuList: [{
+      label: '置顶会话',
+      onClick: () => {
+      }
+    }, {
+      label: '开启免打扰',
+      onClick: () => {
+      }
+    }, {
+      label: '清空所有未读',
+      onClick: () => {
+      }
+    }, {
+      label: '删除当前会话',
+      textType: 'danger',
+      onClick: () => {
+      }
+    }, {
+      label: '删除所有会话',
+      textType: 'danger',
+      onClick: () => {
+      }
+    }]
+  })
 }
 
 </script>
 
 <template>
-  <div class="conversation-item" :class="[{active: conversation === 0}]" @contextmenu="onContextMenu">
+  <div class="conversation-item" :class="[{active}]" @contextmenu="onContextMenu" @click="emits('select')">
     <div class="img-wrap">
       <img src="@/assets/images/chat.png" alt="" />
       <svg-icon class="label" name="label_friend" />
@@ -47,16 +131,16 @@ function onContextMenu(e : MouseEvent) {
     </div>
   </div>
 
-  <context-menu
-    v-model:show="show"
-    :options="options"
-  >
-    <context-menu-item @click="onMenuClick(0)"><p class="menu-text">置顶会话</p></context-menu-item>
-    <context-menu-item @click="onMenuClick(1)"><p class="menu-text">开启免打扰</p></context-menu-item>
-    <context-menu-item @click="onMenuClick(2)"><p class="menu-text">清空所有未读</p></context-menu-item>
-    <context-menu-item @click="onMenuClick(2)"><p class="menu-text red">删除当前会话</p></context-menu-item>
-    <context-menu-item @click="onMenuClick(2)"><p class="menu-text red">删除所有会话</p></context-menu-item>
-  </context-menu>
+<!--  <context-menu-->
+<!--    v-model:show="show"-->
+<!--    :options="options"-->
+<!--  >-->
+<!--    <context-menu-item @click="stickTop"><p class="menu-text">置顶会话</p></context-menu-item>-->
+<!--    <context-menu-item @click="notDisturb"><p class="menu-text">开启免打扰</p></context-menu-item>-->
+<!--    <context-menu-item @click="clearUnread"><p class="menu-text">清空所有未读</p></context-menu-item>-->
+<!--    <context-menu-item @click="delCurConversation"><p class="menu-text red">删除当前会话</p></context-menu-item>-->
+<!--    <context-menu-item @click="delAllConversation"><p class="menu-text red">删除所有会话</p></context-menu-item>-->
+<!--  </context-menu>-->
 </template>
 
 <style scoped lang="scss">

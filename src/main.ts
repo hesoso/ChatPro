@@ -1,7 +1,7 @@
 import { createApp } from 'vue'
 import { router } from './router'
+import store from './store'
 
-import ContextMenu from '@imengyu/vue3-context-menu'
 import VueVirtualScroller from 'vue-virtual-scroller'
 
 import App from './App.vue'
@@ -13,12 +13,14 @@ import '@imengyu/vue3-context-menu/lib/vue3-context-menu.css'
 import 'element-plus/theme-chalk/src/message-box.scss'
 import 'element-plus/theme-chalk/src/message.scss'
 
+localStorage.setItem('sjsjs', 'akldsjflajdfl')
+
 const app = createApp(App)
 
 app.component('SvgIcon', SvgIcon)
+app.use(store)
 app.use(router)
 app.use(VueVirtualScroller)
-app.use(ContextMenu)
 
 app.mount('#app').$nextTick(() => {
   // Use contextBridge
