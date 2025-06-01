@@ -4,7 +4,7 @@ import SearchInput from '@/components/SearchInput.vue'
 import CreateNewConversation from '@/views/workbench/Chat/components/CreateNewConversation.vue'
 
 const showSearch = ref(false)
-const showCreateNewConversation = ref(true)
+const showCreateNewConversation = ref(false)
 
 const handleCancel = () => {
   showSearch.value = false
