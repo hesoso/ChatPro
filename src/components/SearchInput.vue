@@ -1,11 +1,16 @@
 <script setup lang="ts">
-
+defineProps({
+  placeholder: {
+    type: String,
+    default: '请输入关键字'
+  }
+})
 </script>
 
 <template>
   <div class="input-wrap">
     <svg-icon name="search-gray"></svg-icon>
-    <input type="text" placeholder="请输入关键字">
+    <input type="text" :placeholder="placeholder">
   </div>
 </template>
 

@@ -25,10 +25,6 @@ const iconName = computed(() =>  `#icon-${props.name}`)
   vertical-align: -0.15em;
   fill: #333;
   overflow: hidden;
-}
-.svg-external-icon {
-	background-color: #333333;
-	mask-size: cover!important;
-	display: inline-block;
+  outline: none;
 }
 </style>

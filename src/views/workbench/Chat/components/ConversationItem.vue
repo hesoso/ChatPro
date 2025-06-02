@@ -73,37 +73,35 @@ const delAllConversation = () => {
 }
 
 function onContextMenu(e: MouseEvent) {
-  // e.preventDefault()
-  // //Show component mode menu
-  // show.value = true
-  // options.value.x = e.x
-  // options.value.y = e.y
-
-
   e.preventDefault()
   showContextMenu({
     event: e,
     menuList: [{
       label: '置顶会话',
       onClick: () => {
+        stickTop()
       }
     }, {
       label: '开启免打扰',
       onClick: () => {
+        notDisturb()
       }
     }, {
       label: '清空所有未读',
       onClick: () => {
+        clearUnread()
       }
     }, {
       label: '删除当前会话',
       textType: 'danger',
       onClick: () => {
+        delCurConversation()
       }
     }, {
       label: '删除所有会话',
       textType: 'danger',
       onClick: () => {
+        delAllConversation()
       }
     }]
   })

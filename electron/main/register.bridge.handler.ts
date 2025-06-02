@@ -1,4 +1,4 @@
-import { BrowserWindow, ipcMain } from 'electron'
+import { BrowserWindow, ipcMain, screen } from 'electron'
 
 export function registerBridgeHandler() {
   /**
@@ -12,10 +12,14 @@ export function registerBridgeHandler() {
   /**
    * 最大化当前窗口
    */
+  let isMax = false
   ipcMain.on('bridge:toggleMaximize', () => {
     const focusedWindow = BrowserWindow.getFocusedWindow()
-    const isMax = focusedWindow?.isMaximized()
-    isMax ? focusedWindow?.unmaximize() : focusedWindow?.maximize()
+    const width = isMax ? 1200 : screen.getPrimaryDisplay().workAreaSize.width
+    const height = isMax ? 700 : screen.getPrimaryDisplay().workAreaSize.height
+    focusedWindow?.setBounds({ x: 0, y: 0, width, height })
+    focusedWindow?.center()
+    isMax = !isMax
   })
   /**
    *  关闭当前窗口

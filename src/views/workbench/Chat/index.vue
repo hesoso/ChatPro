@@ -13,10 +13,13 @@ import ChantIntroduce from '@/views/workbench/Chat/components/ChantIntroduce.vue
 
 import type { TabsPaneContext } from 'element-plus'
 import { ConversationStatusEnum } from '@/enums/conversation.ts'
+import SvgIcon from '@/components/SvgIcon.vue'
+import TransmitMessage from '@/views/workbench/Chat/components/TransmitMessage.vue'
 
 const conversationStore = useConversationStore()
 const layoutStore = useLayoutStore()
 const activeName = ref('tab1')
+const showTransmitMessage = ref(false)
 
 const handleClick = (tab: TabsPaneContext, event: Event) => {
   console.log(tab, event)
@@ -24,6 +27,18 @@ const handleClick = (tab: TabsPaneContext, event: Event) => {
 
 const handlerReception = () => {
   conversationStore.setConversationStatus(ConversationStatusEnum.recepting)
+}
+
+const cancelMultipleMessage = () => {
+  conversationStore.setMultipleMessageStatus(false)
+}
+
+const cancelAt = () => {
+  conversationStore.setAt(false)
+}
+
+const handleTransmit = () => {
+  showTransmitMessage.value = true
 }
 
 </script>
@@ -42,15 +57,29 @@ const handlerReception = () => {
     <!-- 中间聊天区域 -->
     <div class="center-wrap">
       <div class="layout-qz">
-        <ChatView />
+        <ChatView @transmit="handleTransmit" />
       </div>
       <div class="chat-input">
+        <!-- 待接待状态 -->
         <div v-if="conversationStore.conversationStatus === ConversationStatusEnum.wait" class="layout-cc">
           <img width="100" src="@/assets/images/empty2.png" alt="">
           <p style="font-size: 12px;color: #999999;margin: 10px">暂未接待当前用户</p>
           <el-button type="primary" @click="handlerReception">开始接待</el-button>
         </div>
-        <ChatInput v-else />
+        <template v-else>
+          <!-- at -->
+          <div v-if="conversationStore.at" class="reply">
+            <p> 回复至<span class="nick">小龙女</span></p>
+            <svg-icon style="font-size: 12px" name="close" @click="cancelAt" />
+          </div>
+          <!-- 消息多选状态 --->
+          <div v-if="conversationStore.multipleMessageStatus" class="layout-zy" style="height: 100%;">
+            <el-button @click="cancelMultipleMessage">取消</el-button>
+            <el-button type="primary" @click="handleTransmit">转发</el-button>
+          </div>
+          <!-- 聊天编辑器 -->
+          <ChatInput v-else />
+        </template>
       </div>
     </div>
     <!-- 右侧区域 -->
@@ -65,6 +94,8 @@ const handlerReception = () => {
       </el-tabs>
     </div>
   </div>
+  <!-- 转发消息 -->
+  <TransmitMessage v-if="showTransmitMessage" v-model="showTransmitMessage"></TransmitMessage>
 </template>
 
 <style scoped lang="scss">
@@ -112,5 +143,21 @@ const handlerReception = () => {
 }
 .layout-cc {
   height: 100%
+}
+.reply {
+  height: 24px;
+  background: #fff;
+  padding: 0 13px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #999;
+
+  .nick {
+    color: #3686FF;
+    font-size: 14px;
+    margin-left: 5px;
+  }
 }
 </style>

@@ -9,6 +9,7 @@ const conversationStore = useConversationStore()
 const props = defineProps({
   mode: String
 })
+const emits = defineEmits(['transmit'])
 
 
 const messageList = ref(new Array(20000).fill(0))
@@ -43,13 +44,10 @@ nextTick(() => {
         ]"
           :data-index="index"
         >
-          <MessageItem :index="index"></MessageItem>
+          <MessageItem :index="index" @transmit="emits('transmit')"></MessageItem>
         </DynamicScrollerItem>
       </template>
     </DynamicScroller>
-    <div v-if="mode !== 'history' && conversationStore.conversationStatus !== ConversationStatusEnum.wait" class="reply">
-      回复至<span class="nick">小龙女</span>
-    </div>
   </div>
 </template>
 
@@ -71,19 +69,4 @@ nextTick(() => {
   flex-direction: column;
 }
 
-.reply {
-  height: 24px;
-  background: #fff;
-  padding: 0 13px;
-  display: flex;
-  align-items: center;
-  font-size: 12px;
-  color: #999;
-
-  .nick {
-    color: #3686FF;
-    font-size: 14px;
-    margin-left: 5px;
-  }
-}
 </style>

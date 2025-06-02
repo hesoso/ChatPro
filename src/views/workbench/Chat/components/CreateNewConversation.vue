@@ -123,12 +123,12 @@ const tableData: User[] = [
           @selection-change="handleSelectionChange"
         >
           <el-table-column align="center" type="selection" :selectable="selectable" width="55" />
-          <el-table-column align="center" label="好友消息">
+          <el-table-column align="center" label="好友信息">
             <template #default="scope">
               <div class="avatar-box">
                 <img src="" alt="">
                 <div class="content">
-                  <p class="title">名字29999000 <span class="link">企微</span></p>
+                  <p class="title">名字29999000 <span class="link">(备注)</span></p>
                   <p class="text">12488888888888888</p>
                 </div>
               </div>

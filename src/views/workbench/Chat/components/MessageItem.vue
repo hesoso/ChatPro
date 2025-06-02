@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { showContextMenu } from '@/components/ContextMenu'
+import { useConversationStore } from '@/store/useConversationStore.ts'
+import { ElMessage } from 'element-plus'
 
 const props = defineProps({
   index: {
@@ -8,6 +10,9 @@ const props = defineProps({
     required: true
   }
 })
+const emits = defineEmits(['transmit'])
+
+const conversationStore = useConversationStore()
 
 const fromMe = computed(() => props.index % 7 === 0)
 
@@ -15,23 +20,34 @@ const fromMe = computed(() => props.index % 7 === 0)
 
 function onContextMenuMessage(e: MouseEvent) {
   e.preventDefault()
+  if (fromMe.value || conversationStore.multipleMessageStatus) return
   showContextMenu({
     event: e,
     menuList: [{
       label: '复制',
       onClick: () => {
+        ElMessage.success({
+          message: '复制',
+          showClose: true
+        })
       }
     }, {
       label: '复制消息',
       onClick: () => {
+        ElMessage.success({
+          message: '复制消息',
+          showClose: true
+        })
       }
     }, {
       label: '多选',
       onClick: () => {
+        conversationStore.setMultipleMessageStatus(true)
       }
     }, {
       label: '转发',
       onClick: () => {
+        emits('transmit')
       }
     }
     ]
@@ -40,11 +56,13 @@ function onContextMenuMessage(e: MouseEvent) {
 
 function onContextMenuAvatar(e: MouseEvent) {
   e.preventDefault()
+  if (fromMe.value || conversationStore.multipleMessageStatus) return
   showContextMenu({
     event: e,
     menuList: [{
       label: '@',
       onClick: () => {
+        conversationStore.setAt(true)
       }
     }, {
       label: '屏蔽',
@@ -62,18 +80,21 @@ function onContextMenuAvatar(e: MouseEvent) {
 </script>
 
 <template>
-  <div class="message-item" :class="[{'from-me': fromMe}]">
-    <div class="avatar-wrap" @contextmenu="onContextMenuAvatar">
-      <img src="" alt="">
-    </div>
-    <div class="message-content" @contextmenu="onContextMenuMessage">
-      <div class="title-wrap">
-        <span class="title">小七</span>
+  <div class="message-item-wrap">
+    <el-checkbox v-if="conversationStore.multipleMessageStatus" class="checkbox"></el-checkbox>
+    <div class="message-item" :class="[{'from-me': fromMe}]">
+      <div class="avatar-wrap" @contextmenu="onContextMenuAvatar">
+        <img src="" alt="">
       </div>
-      <div class="message-text">你好，在吗？</div>
-    </div>
-    <div class="status-wrap">
-      <svg-icon name="error"></svg-icon>
+      <div class="message-content" @contextmenu="onContextMenuMessage">
+        <div class="title-wrap">
+          <span class="title">小七</span>
+        </div>
+        <div class="message-text">你好，在吗？</div>
+      </div>
+      <div class="status-wrap">
+        <svg-icon name="error"></svg-icon>
+      </div>
     </div>
   </div>
 
@@ -90,8 +111,16 @@ function onContextMenuAvatar(e: MouseEvent) {
 </template>
 
 <style scoped lang="scss">
+.message-item-wrap {
+  display: flex;
+  .checkbox {
+    margin-left: 8px;
+  }
+}
+
 .message-item {
   display: flex;
+  flex: 1;
 
   .avatar-wrap {
     padding: 0 8px 0 18px;

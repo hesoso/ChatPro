@@ -1,4 +1,4 @@
-import { app, ipcMain, BrowserWindow } from "electron";
+import { app, ipcMain, BrowserWindow, screen } from "electron";
 import { fileURLToPath } from "node:url";
 import path$1 from "node:path";
 import path from "path";
@@ -184,10 +184,14 @@ function registerBridgeHandler() {
     const focusedWindow = BrowserWindow.getFocusedWindow();
     focusedWindow == null ? void 0 : focusedWindow.minimize();
   });
+  let isMax = false;
   ipcMain.on("bridge:toggleMaximize", () => {
     const focusedWindow = BrowserWindow.getFocusedWindow();
-    const isMax = focusedWindow == null ? void 0 : focusedWindow.isMaximized();
-    isMax ? focusedWindow == null ? void 0 : focusedWindow.unmaximize() : focusedWindow == null ? void 0 : focusedWindow.maximize();
+    const width = isMax ? 1200 : screen.getPrimaryDisplay().workAreaSize.width;
+    const height = isMax ? 700 : screen.getPrimaryDisplay().workAreaSize.height;
+    focusedWindow == null ? void 0 : focusedWindow.setBounds({ x: 0, y: 0, width, height });
+    focusedWindow == null ? void 0 : focusedWindow.center();
+    isMax = !isMax;
   });
   ipcMain.on("bridge:closeWindow", () => {
     console.log("Bridge closed");
