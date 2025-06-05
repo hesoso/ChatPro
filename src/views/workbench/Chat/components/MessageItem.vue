@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, h, ref } from 'vue'
 import { showContextMenu } from '@/components/ContextMenu'
 import { useConversationStore } from '@/store/useConversationStore.ts'
 import { ElMessage } from 'element-plus'
+import  { MessageContent } from '../utils/messageContentRender.ts'
 
 const props = defineProps({
   index: {
@@ -15,6 +16,8 @@ const emits = defineEmits(['transmit'])
 const conversationStore = useConversationStore()
 
 const fromMe = computed(() => props.index % 7 === 0)
+
+const messageContent = '你好，在吗？'
 
 // const show = ref(false);
 
@@ -76,7 +79,6 @@ function onContextMenuAvatar(e: MouseEvent) {
   })
 }
 
-
 </script>
 
 <template>
@@ -90,7 +92,7 @@ function onContextMenuAvatar(e: MouseEvent) {
         <div class="title-wrap">
           <span class="title">小七</span>
         </div>
-        <div class="message-text">你好，在吗？</div>
+        <MessageContent :messageData="{messageData: {}}" />
       </div>
       <div class="status-wrap">
         <svg-icon name="error"></svg-icon>
@@ -137,16 +139,6 @@ function onContextMenuAvatar(e: MouseEvent) {
     font-size: 11px;
     color: #212121;
   }
-}
-
-.message-text {
-  height: 30px;
-  background: #FFFFFF;
-  border-radius: 6px 6px 6px 6px;
-  color: #212121;
-  font-size: 14px;
-  padding: 7px 8px;
-  margin-top: 5px;
 }
 
 .status-wrap {

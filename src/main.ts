@@ -13,8 +13,6 @@ import '@imengyu/vue3-context-menu/lib/vue3-context-menu.css'
 import 'element-plus/theme-chalk/src/message-box.scss'
 import 'element-plus/theme-chalk/src/message.scss'
 
-localStorage.setItem('sjsjs', 'akldsjflajdfl')
-
 const app = createApp(App)
 
 app.component('SvgIcon', SvgIcon)

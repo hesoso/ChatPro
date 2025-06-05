@@ -3,6 +3,7 @@
 :root{
   --mx-menu-hover-backgroud: #E3EBFF !important;
   --mx-menu-placeholder-width: 7px !important;
+  --w-e-textarea-bg-color: transparent !important;
 }
 
 .drag-area {
@@ -81,7 +82,7 @@
 }
 
 // scroll
-.scroll {
+.scroll,.w-e-scroll {
   &::-webkit-scrollbar {
     width: 8px;
     background-color: transparent;
@@ -497,4 +498,9 @@
   font-size: 12px;
   background: #3686FF;
   margin-right: 3px;
+}
+
+.emoji-popover.el-popper {
+  padding: 0 !important;
+  border-radius: 10px !important;
 }
