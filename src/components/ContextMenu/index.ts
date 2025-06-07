@@ -4,6 +4,8 @@ import { h } from 'vue'
 export interface IContextMenuOptions {
   event: MouseEvent,
   menuList: Array<IMenuItem>,
+  xOffset?: number,
+  yOffset?: number
 }
 
 export interface IMenuItem extends MenuItem {
@@ -23,5 +25,6 @@ export const showContextMenu = ({ event, menuList }: IContextMenuOptions) => {
     x: event.x,
     y: event.y,
     items: items,
+    zIndex: 4000,
   })
 }

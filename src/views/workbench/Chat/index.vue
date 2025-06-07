@@ -15,11 +15,13 @@ import type { TabsPaneContext } from 'element-plus'
 import { ConversationStatusEnum } from '@/enums/conversation.ts'
 import SvgIcon from '@/components/SvgIcon.vue'
 import TransmitMessage from '@/views/workbench/Chat/components/TransmitMessage.vue'
+import ChatAllMessage from '@/views/workbench/Chat/components/ChatAllMessage.vue'
 
 const conversationStore = useConversationStore()
 const layoutStore = useLayoutStore()
 const activeName = ref('tab1')
 const showTransmitMessage = ref(false)
+const showAllMessage = ref(false)
 
 const handleClick = (tab: TabsPaneContext, event: Event) => {
   console.log(tab, event)
@@ -39,6 +41,10 @@ const cancelAt = () => {
 
 const handleTransmit = () => {
   showTransmitMessage.value = true
+}
+
+const handleShowAllMessage = () => {
+  showAllMessage.value = true
 }
 
 </script>
@@ -78,7 +84,7 @@ const handleTransmit = () => {
             <el-button type="primary" @click="handleTransmit">转发</el-button>
           </div>
           <!-- 聊天编辑器 -->
-          <ChatInput v-else />
+          <ChatInput v-else @show-all-message="handleShowAllMessage" />
         </template>
       </div>
     </div>
@@ -96,6 +102,8 @@ const handleTransmit = () => {
   </div>
   <!-- 转发消息 -->
   <TransmitMessage v-if="showTransmitMessage" v-model="showTransmitMessage"></TransmitMessage>
+  <!-- 全部消息 -->
+  <ChatAllMessage v-if="showAllMessage" v-model="showAllMessage"></ChatAllMessage>
 </template>
 
 <style scoped lang="scss">

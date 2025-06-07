@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import SearchInput from '@/components/SearchInput.vue'
 import { ElMessageBox } from 'element-plus'
 
 defineProps({
@@ -8,75 +7,16 @@ defineProps({
 })
 const emits = defineEmits(['update:modelValue'])
 
-const showHistoryMessage = ref(false)
-
-
-const handleTransmit = () => {
-  ElMessageBox.confirm(
-    '是否确认转发？',
-    '提示',
-    {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-    }
-  )
-    .then(() => {
-      emits('update:modelValue', false)
-    })
-    .catch(() => {
-
-    })
-}
-
 </script>
 
 <template>
-  <el-dialog :model-value="modelValue" width="590" title="请选择转发对象"
-             @update:modelValue="emits('update:modelValue')">
-    <div class="dialog-content">
-      <div class="dialog-content-left flex-col">
-        <div class="search-input-wrap">
-          <SearchInput placeholder="请输入机器人WXID或昵称"></SearchInput>
-        </div>
-        <ul class="list-wrap scroll">
-          <li class="list-item" v-for="item in 30">
-            <div class="layout-lc">
-              <el-checkbox></el-checkbox>
-              <img class="avatar" src="" alt="">
-              <span class="title">青春没有售价</span>
-            </div>
-          </li>
-        </ul>
-      </div>
-      <div class="dialog-content-right flex-col">
-        <div class="flex-col">
-          <span class="link">分别转发给</span>
-          <ul class="list-wrap scroll">
-            <li class="list-item" v-for="item in 5">
-              <div class="layout-slide">
-                <div class="layout-lc">
-                  <img class="avatar" src="" alt="">
-                  <span class="title">青春没有售价</span>
-                </div>
-                <svg-icon name="close"/>
-              </div>
-            </li>
-          </ul>
-        </div>
-        <div class="bottom-wrap">
-          <el-tag @click="showHistoryMessage = true">[逐条转发]杨过和百灵鸟的聊天记录</el-tag>
-          <div class="layout-slide mt10">
-            <el-button @click="emits('update:modelValue', false)"><span class="btn-text-margin">取消</span></el-button>
-            <el-button type="primary" @click="handleTransmit"><span class="btn-text-margin">转发</span></el-button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </el-dialog>
 
-  <el-dialog v-model="showHistoryMessage" title="全部消息的聊天记录" width="496">
+  <el-dialog :model-value="modelValue" title="全部消息"
+             @update:modelValue="emits('update:modelValue')" width="496">
     <div class="flex-col h600">
-      <p class="time-text">2024-11-28 ~ 2025-11-28</p>
+      <div class="search-input-wrap">
+        <SearchInput></SearchInput>
+      </div>
       <ul class="list-wrap scroll">
         <li class="message-item layout-qz" v-for="item in 30">
           <img class="avatar" src="" alt="">
@@ -194,13 +134,16 @@ const handleTransmit = () => {
 .link {
   padding: 10px 28px;
 }
+
 .bottom-wrap {
   border-top: 1px solid #E5E5E5;
   padding: 10px 28px 0;
 }
+
 .mt10 {
   margin-top: 10px;
 }
+
 .time-text {
   text-align: center;
   padding: 14px 0;
@@ -210,17 +153,20 @@ const handleTransmit = () => {
   margin: 0 25px;
   padding: 12px 0;
   border-bottom: 1px solid #DCDCDC;
+
   .avatar {
     width: 34px;
     height: 34px;
     border-radius: 50%;
     margin-right: 8px;
   }
+
   .sub-text {
     font-weight: 400;
     font-size: 12px;
     color: #999999;
   }
+
   .text {
     margin-top: 5px;
     font-weight: 400;
@@ -228,7 +174,13 @@ const handleTransmit = () => {
     color: #212121;
   }
 }
+
 .h600 {
   height: 600px;
+}
+
+.search-input-wrap {
+  width: 100%;
+  padding: 0 25px;
 }
 </style>
