@@ -14,8 +14,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 process.env.APP_ROOT = path.join(__dirname, '..')
 
 // 使用 ['ENV_NAME'] 的方式访问环境变量，避免 vite:define 插件对 process.env.ENV_NAME 的静态替换问题
-// export const VITE_DEV_SERVER_URL = process.env['VITE_DEV_SERVER_URL']
-export const VITE_DEV_SERVER_URL = 'http://localhost:5173'
+export const VITE_DEV_SERVER_URL = process.env['VITE_DEV_SERVER_URL']
 export const MAIN_DIST = path.join(process.env.APP_ROOT, 'dist-electron')
 export const RENDERER_DIST = path.join(process.env.APP_ROOT, 'dist')
 
@@ -34,10 +33,10 @@ function createWindow() {
     icon: path.join(process.env.VITE_PUBLIC, 'logo.ico'),
     width: 1200,
     height: 760,
-    // frame: false, // 设置为 false 时用于创建无边框窗口
-    // resizable: false, // 窗口是否可以改变尺寸
-    // transparent: true, // 用于设置窗口是否透明
-    maximizable: false, // 禁止最大化
+    frame: false, // 设置为 false 时用于创建无边框窗口
+    resizable: false, // 窗口是否可以改变尺寸
+    transparent: false, // 用于设置窗口是否透明
+    // maximizable: false, // 禁止最大化
     // autoHideMenuBar:true,// 是否隐藏菜单栏
     // titleBarStyle:'hidden',// 窗口标题栏的样式
     // backgroundColor: '#EFF0F4', // 窗口的背景颜色为十六进制值

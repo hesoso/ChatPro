@@ -24,9 +24,7 @@ const handleQueryMeesage = () => {
 
 <style lang="scss">
 @use "@/styles/common.scss";
-@use '@/styles/reset.scss';
 @use '@/styles/normalize.scss';
-@use '@/styles/qqface.scss';
 @use '@/assets/iconfont/iconfont.css';
 @use '@/assets/font-awesome/css/font-awesome.css';
 

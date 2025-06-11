@@ -32,5 +32,6 @@ interface Window {
     toggleDevTool: () => void,
     minimize: () => void,
     closeWindow: () => void,
+    toggleMaximize: () => void,
   }
 }
