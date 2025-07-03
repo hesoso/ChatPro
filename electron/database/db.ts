@@ -2,15 +2,8 @@ import path from 'path';
 import fs from 'fs';
 import { app } from 'electron'; // 获取存储应用程序特定用户数据的标准位置。
 import Database, { type Database as DB } from 'better-sqlite3';
-import {
-    PRAGMA_FOREIGN_KEYS_ON,
-    CREATE_USERS_TABLE_SQL,
-    CREATE_MESSAGES_TABLE_SQL,
-    CREATE_MESSAGES_SESSION_TIMESTAMP_INDEX_SQL,
-    CREATE_SESSIONS_TABLE_SQL,
-    CREATE_SESSIONS_UPDATED_AT_INDEX_SQL,
-    CREATE_GROUPS_TABLE_SQL
-} from './schema/ddl'
+import { getResourcePath } from '../utils/path.helper'
+
 
 // 将数据库文件存储在用户数据目录
 const dbPath: string = path.join(app.getPath('userData'), 'chat_app.db');
@@ -32,18 +25,25 @@ export function initializeDatabase(): void {
     // verbose 在控制台打印执行的 SQL 语句，方便调试
     db = new Database(dbPath, { verbose: console.log });
 
-    // 开启外键约束
-    db.exec(PRAGMA_FOREIGN_KEYS_ON);
+    try {
+        // 读取 SQL 文件内容
+        const sqlScript = fs.readFileSync(getResourcePath('database/schema/ddl.sql'), 'utf8');
 
+        // 执行 SQL 脚本
+        db.exec(sqlScript);
+
+        console.log('数据库初始化成功！');
+    } catch (err) {
+        console.error('数据库初始化失败:', err);
+    }
 
     // 创建表 (如果表不存在的话)
-    db.exec(CREATE_USERS_TABLE_SQL);
-    db.exec(CREATE_MESSAGES_TABLE_SQL);
-    db.exec(CREATE_MESSAGES_SESSION_TIMESTAMP_INDEX_SQL);
-    db.exec(CREATE_SESSIONS_TABLE_SQL);
-    db.exec(CREATE_SESSIONS_UPDATED_AT_INDEX_SQL);
-    db.exec(CREATE_GROUPS_TABLE_SQL);
-
+    // db.exec(CREATE_USERS_TABLE_SQL);
+    // db.exec(CREATE_MESSAGES_TABLE_SQL);
+    // db.exec(CREATE_MESSAGES_SESSION_TIMESTAMP_INDEX_SQL);
+    // db.exec(CREATE_SESSIONS_TABLE_SQL);
+    // db.exec(CREATE_SESSIONS_UPDATED_AT_INDEX_SQL);
+    // db.exec(CREATE_GROUPS_TABLE_SQL);
 
     console.log('数据库已初始化，并确保表已创建。');
 }

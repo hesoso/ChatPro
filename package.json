@@ -17,6 +17,7 @@
     "animate.css": "^4.1.1",
     "better-sqlite3": "^11.10.0",
     "element-plus": "^2.9.10",
+    "humps": "^2.0.1",
     "pinia": "^3.0.2",
     "pinia-plugin-persistedstate": "^4.3.0",
     "sqlite3": "^5.1.7",

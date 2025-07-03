@@ -4,64 +4,14 @@ import path$1 from "node:path";
 import path from "path";
 import fs from "fs";
 import Database from "better-sqlite3";
-const PRAGMA_FOREIGN_KEYS_ON = "PRAGMA foreign_keys = ON;";
-const CREATE_USERS_TABLE_SQL = `
-    CREATE TABLE IF NOT EXISTS users (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        wxid TEXT UNIQUE NOT NULL, -- 微信号，唯一且不为空
-        nickname TEXT,
-        avatar_url TEXT,
-        remark TEXT, -- 备注
-        type BOOLEAN DEFAULT 0, -- 0 表示其他用户 1 表示当前登录账号
-        created_at INTEGER NOT NULL DEFAULT (STRFTIME('%s', 'now') * 1000) -- 存储为 Unix 毫秒时间戳
-    );
-`;
-const CREATE_MESSAGES_TABLE_SQL = `
-    CREATE TABLE IF NOT EXISTS messages (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        session_id TEXT NOT NULL, -- 会话ID，可以是 user_wxid 或 group_id
-        sender_id_ref TEXT, -- 发送者ID (可能是用户的wxid，或机器人的标识)
-        receiver_id_ref TEXT, -- 接收者ID (用户wxid或群id)
-        message_type TEXT DEFAULT 'text', -- 'text', 'image', 'file', 'video', 'system'
-        content TEXT, -- 文本内容，或文件/图片的路径/URL
-        timestamp INTEGER NOT NULL, -- 存储为 Unix 毫秒时间戳, 由应用层写入
-        status TEXT DEFAULT 'sent', -- 'sent', 'delivered', 'read', 'failed'
-        is_from_me BOOLEAN DEFAULT 0, -- 1 表示是当前登录账号发出的
-        quote_message_id INTEGER, -- 引用的消息ID
-        raw_data TEXT, -- 可以存储原始消息对象JSON字符串，以备将来扩展
-        FOREIGN KEY (sender_id_ref) REFERENCES users(wxid) ON DELETE SET NULL
-    );
-`;
-const CREATE_MESSAGES_SESSION_TIMESTAMP_INDEX_SQL = "CREATE INDEX IF NOT EXISTS idx_messages_session_id_timestamp ON messages (session_id, timestamp);";
-const CREATE_SESSIONS_TABLE_SQL = `
-    CREATE TABLE IF NOT EXISTS sessions (
-        id TEXT PRIMARY KEY, -- 会话的唯一标识，例如 user_wxid 或 group_id
-        type INTEGER NOT NULL, -- 0 (单聊) or 1 (群聊)
-        name TEXT, -- 会话名称 (好友昵称或群名称)
-        avatar_url TEXT, -- 会话头像
-        last_message_preview TEXT, -- 最后一条消息预览
-        last_message_timestamp INTEGER, -- 最后一条消息的时间戳 (Unix 毫秒)
-        unread_count INTEGER DEFAULT 0, -- 未读消息数量
-        is_pinned BOOLEAN DEFAULT 0, -- 是否置顶
-        is_muted BOOLEAN DEFAULT 0, -- 是否免打扰
-        draft TEXT, -- 草稿
-        updated_at INTEGER NOT NULL -- 会话更新时间戳 (Unix 毫秒), 由应用层写入
-    );
-`;
-const CREATE_SESSIONS_UPDATED_AT_INDEX_SQL = "CREATE INDEX IF NOT EXISTS idx_sessions_updated_at ON sessions (updated_at);";
-const CREATE_GROUPS_TABLE_SQL = `
-    CREATE TABLE IF NOT EXISTS groups (
-        id TEXT PRIMARY KEY, -- 群ID
-        name TEXT,
-        avatar_url TEXT,
-        owner_id_ref TEXT, -- 群主wxid
-        member_count INTEGER,
-        announcement TEXT, -- 群公告
-        created_at INTEGER NOT NULL DEFAULT (STRFTIME('%s', 'now') * 1000) -- 存储为 Unix 毫秒时间戳
-    );
-`;
 const dbPath = path.join(app.getPath("userData"), "chat_app.db");
 let db;
+function getResourcePath(...paths) {
+  if (!app.isPackaged) {
+    return path.join(process.cwd(), "electron", ...paths);
+  }
+  return path.join(process.resourcesPath, ...paths);
+}
 function initializeDatabase() {
   const dbDir = path.dirname(dbPath);
   if (!fs.existsSync(dbDir)) {
@@ -69,13 +19,13 @@ function initializeDatabase() {
   }
   console.log("数据库已成功创建============>", dbDir);
   db = new Database(dbPath, { verbose: console.log });
-  db.exec(PRAGMA_FOREIGN_KEYS_ON);
-  db.exec(CREATE_USERS_TABLE_SQL);
-  db.exec(CREATE_MESSAGES_TABLE_SQL);
-  db.exec(CREATE_MESSAGES_SESSION_TIMESTAMP_INDEX_SQL);
-  db.exec(CREATE_SESSIONS_TABLE_SQL);
-  db.exec(CREATE_SESSIONS_UPDATED_AT_INDEX_SQL);
-  db.exec(CREATE_GROUPS_TABLE_SQL);
+  try {
+    const sqlScript = fs.readFileSync(getResourcePath("database/schema/ddl.sql"), "utf8");
+    db.exec(sqlScript);
+    console.log("数据库初始化成功！");
+  } catch (err) {
+    console.error("数据库初始化失败:", err);
+  }
   console.log("数据库已初始化，并确保表已创建。");
 }
 function getDB() {
