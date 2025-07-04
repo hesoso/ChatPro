@@ -5,6 +5,7 @@ import path from 'node:path'
 
 
 import { initializeDatabase, getDB } from '../database/index'
+import { regsiterBaseHandler } from './register.base'
 import { regsiterDatabaseHandler } from './register.database'
 import { registerBridgeHandler } from './register.bridge.handler'
 
@@ -87,6 +88,8 @@ app.whenReady().then(() => {
   initializeDatabase()
   // 创建窗口
   createWindow()
+  // 注册基础处理事件
+  regsiterBaseHandler()
   // 注册数据库处理事件
   regsiterDatabaseHandler()
   // 注册桥方法

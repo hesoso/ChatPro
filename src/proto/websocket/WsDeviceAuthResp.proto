@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package protobuf.websocket;
+
+option java_outer_classname = "WsDeviceAuthRespProto";
+
+message WsDeviceAuthResp {
+  string tenantId = 1;  // 租户ID
+  string token = 2;     // 授权令牌
+}

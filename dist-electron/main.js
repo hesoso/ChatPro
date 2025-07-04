@@ -4,14 +4,14 @@ import path$1 from "node:path";
 import path from "path";
 import fs from "fs";
 import Database from "better-sqlite3";
-const dbPath = path.join(app.getPath("userData"), "chat_app.db");
-let db;
 function getResourcePath(...paths) {
   if (!app.isPackaged) {
     return path.join(process.cwd(), "electron", ...paths);
   }
   return path.join(process.resourcesPath, ...paths);
 }
+const dbPath = path.join(app.getPath("userData"), "chat_app.db");
+let db;
 function initializeDatabase() {
   const dbDir = path.dirname(dbPath);
   if (!fs.existsSync(dbDir)) {
@@ -102,6 +102,14 @@ var DB_EVENTS = /* @__PURE__ */ ((DB_EVENTS2) => {
   DB_EVENTS2["GetChatData"] = "db:query-chat-data";
   return DB_EVENTS2;
 })(DB_EVENTS || {});
+var BASE_EVENTS = /* @__PURE__ */ ((BASE_EVENTS2) => {
+  BASE_EVENTS2["Login"] = "base:login";
+  return BASE_EVENTS2;
+})(BASE_EVENTS || {});
+const regsiterBaseHandler = () => {
+  ipcMain.handle(BASE_EVENTS.Login, async (_event) => {
+  });
+};
 const regsiterDatabaseHandler = () => {
   ipcMain.handle(DB_EVENTS.AddMessage, async (_event, messageData) => {
     try {
@@ -221,6 +229,7 @@ app.on("will-quit", () => {
 app.whenReady().then(() => {
   initializeDatabase();
   createWindow();
+  regsiterBaseHandler();
   regsiterDatabaseHandler();
   registerBridgeHandler();
   win == null ? void 0 : win.webContents.openDevTools();

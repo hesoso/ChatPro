@@ -5,3 +5,8 @@ export enum DB_EVENTS {
     GetMessages = 'db:get-messages',
     GetChatData = 'db:query-chat-data'
 }
+
+// 基础事件枚举
+export enum BASE_EVENTS {
+    Login = 'base:login',
+}

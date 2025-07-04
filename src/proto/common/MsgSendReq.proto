@@ -1,0 +1,86 @@
+syntax = "proto3";
+
+package protobuf.common;
+
+import "google/protobuf/any.proto";
+import "consts/EnumContentType.proto";
+
+option java_outer_classname = "MsgSendReqProto";
+
+message MsgSendReq {
+  string guid = 1;                                  // 实例ID
+  string receiver = 2;                              // 接收人(微信ID|群ID|模拟群成员微信ID)
+  protobuf.consts.EnumContentType contentType = 3;  // 消息类型
+  google.protobuf.Any content = 4;                  // 消息内容
+}
+
+message RevokeReq {
+  string msgId = 1; // 消息ID
+}
+
+message ReadReq {
+
+}
+
+message TextReq {
+  repeated string at = 1; // @(@所有人|@微信ID)
+  string content = 2;     // 文本内容
+}
+
+message EmojiReq {
+  string url = 1; // 表情链接
+}
+
+message ImageReq {
+  string url = 1; // 图片链接
+}
+
+message VoiceReq {
+  // 暂不实现
+}
+
+message VideoReq {
+  string url = 1; // 视频链接
+}
+
+message WeappReq {
+  string msgId = 1; // 小程序消息ID
+}
+
+message SphReq {
+  string msgId = 1; // 视频号消息ID
+}
+
+message LuckymoneyReq {
+  string title = 1;   // 红包标题
+  string content = 2; // 红包内容
+  string thumb = 3;   // 红包封面
+  string url = 4;     // 红包地址
+}
+
+message LinkReq {
+  string title = 1;   // 链接标题
+  string content = 2; // 链接内容
+  string thumb = 3;   // 链接封面
+  string url = 4;     // 链接地址
+}
+
+message NamecardReq {
+  string wechatId = 1; // 名片
+}
+
+message FileReq {
+  string url = 1; // 文件链接
+}
+
+message QuoteReq {
+  // TODO
+}
+
+message ForwardReq {
+  // 暂不实现
+}
+
+message VoiceToTextReq {
+  string msgId = 1; // 语音消息ID
+}
