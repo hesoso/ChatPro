@@ -40,7 +40,7 @@ contextBridge.exposeInMainWorld('databaseApi', {
      * @param messageData - 消息数据。
      * @returns Promise，解析为包含 success 和 data (包含 id 和 timestamp) / error 的对象。
      */
-    addMessage: (messageData: AddMessageParams) => ipcRenderer.invoke(DB_EVENTS.AddMessage, messageData),
+    onMessage: (messageData: AddMessageParams) => ipcRenderer.invoke(DB_EVENTS.OnMessage, messageData),
 
     /**
      * 根据会话ID获取消息列表。

@@ -17,11 +17,11 @@ CREATE TABLE IF NOT EXISTS T_BEE_CHAT_CONTACT (
     COMPANY_ID        TEXT, -- '公司ID'
     COMPANY_NAME      TEXT, -- '公司名称'
     RELATION          TEXT, -- '联系人关系(1:正常,0:已被删)'
-    ADD_CONTACT_TIME  TEXT, -- '添加为联系人时间'
+    ADD_CONTACT_TIME  INTEGER, -- '添加为联系人时间'
     CREATE_BY         TEXT, -- '创建人'
-    CREATE_TIME       TEXT, -- '创建时间'
+    CREATE_TIME       INTEGER, -- '创建时间'
     UPDATE_BY         TEXT, -- '修改人'
-    UPDATE_TIME       TEXT  -- '修改时间'
+    UPDATE_TIME       INTEGER -- '修改时间'
 );
 
 -- 唯一索引: 微信ID + 联系人微信ID
@@ -50,11 +50,11 @@ CREATE TABLE IF NOT EXISTS T_BEE_CHAT_ROOM (
     PUBLISH_WECHAT_ID TEXT, -- '发布人微信ID'
     PUBLISH_NICKNAME  TEXT, -- '发布人微信昵称'
     PUBLISH_AVATAR    TEXT, -- '发布人微信头像'
-    PUBLISH_TIME      TEXT, -- '发布时间'
+    PUBLISH_TIME      INTEGER, -- '发布时间'
     CREATE_BY         TEXT, -- '创建人'
-    CREATE_TIME       TEXT, -- '创建时间'
+    CREATE_TIME       INTEGER, -- '创建时间'
     UPDATE_BY         TEXT, -- '修改人'
-    UPDATE_TIME       TEXT  -- '修改时间'
+    UPDATE_TIME       INTEGER  -- '修改时间'
 );
 
 -- 唯一索引: 微信ID + 群ID
@@ -80,7 +80,7 @@ CREATE TABLE IF NOT EXISTS T_BEE_CHAT_ROOM_MEMBER (
     COMPANY_ID        TEXT, -- '公司ID'
     COMPANY_NAME      TEXT, -- '公司名称'
     INVITER_WECHAT_ID TEXT, -- '邀请人微信ID'
-    JOIN_ROOM_TIME    TEXT  -- '进群时间'
+    JOIN_ROOM_TIME    INTEGER  -- '进群时间'
 );
 
 -- 唯一索引: 微信ID + 群ID + 成员微信ID
@@ -102,28 +102,35 @@ CREATE INDEX IF NOT EXISTS IX_T_BEE_CHAT_ROOM_MEMBER_JRT
 
 -- 消息表 (T_BEE_CHAT_MSG)
 CREATE TABLE IF NOT EXISTS T_BEE_CHAT_MSG (
-    ID             INTEGER PRIMARY KEY AUTOINCREMENT, -- '主键'
-    WECHAT_ID      TEXT NOT NULL, -- '微信ID'
-    SENDER         TEXT NOT NULL, -- '发送人(微信ID|群成员微信ID|模拟群成员微信ID)'
-    RECEIVER       TEXT NOT NULL, -- '接收人(微信ID|群ID|模拟群成员微信ID)'
-    MSG_ID         TEXT NOT NULL, -- '消息ID'
-    CONTENT_TYPE   TEXT, -- '消息类型(@枚举)'
-    CONTENT        TEXT, -- '消息内容'
-    SOURCE         TEXT, -- '消息来源(前端不需要)'
-    ORIGIN_CONTENT TEXT, -- '原始消息内容(前端不需要)'
-    REVOKE_FLAG    TEXT, -- '撤回标识(1:是,0:否)'
-    SHIELD_FLAG    TEXT, -- '屏蔽消息标识(前端不需要)(1:是,0:否)'
-    CLIENT_FLAG    TEXT, -- '客户端消息标识(1:是,0:否)'
-    SEND_USER_ID   TEXT, -- '发送用户ID'
-    CREATE_BY      TEXT, -- '创建人'
-    CREATE_TIME    TEXT, -- '创建时间'
-    UPDATE_BY      TEXT, -- '修改人'
-    UPDATE_TIME    TEXT  -- '修改时间'
+    ID                  INTEGER PRIMARY KEY AUTOINCREMENT, -- '主键'
+    WECHAT_ID           TEXT NOT NULL, -- '微信ID'
+    CHAT_TYPE           TEXT, -- '聊天类型(1:私聊,2:群聊,3:模拟)'
+    SENDER              TEXT NOT NULL, -- '发送人(微信ID|群成员微信ID|模拟群成员微信ID)'
+    SENDER_AVATAR       TEXT, -- '发送人头像'
+    SENDER_NICKNAME     TEXT, -- '发送人昵称'
+    RECEIVER            TEXT NOT NULL, -- '接收人(微信ID|群ID|模拟群成员微信ID)'
+    RECEIVER_AVATAR     TEXT, -- '接收人头像'
+    RECEIVER_NICKNAME   TEXT, -- '接收人昵称'
+    SOURCE_ROOM_AVATAR  TEXT, -- '来源群头像'
+    SOURCE_ROOM_NAME    TEXT, -- '来源群名称'
+    MSG_ID              TEXT NOT NULL, -- '消息ID'
+    CONTENT_TYPE        TEXT, -- '消息类型(@枚举)'
+    CONTENT             TEXT, -- '消息内容'
+    REVOKE_FLAG         TEXT, -- '撤回标识(1:是,0:否)'
+    CLIENT_FLAG         TEXT, -- '客户端消息标识(1:是,0:否)' 默认传1
+    SEND_USER_ID        TEXT, -- '发送用户ID'
+    SEND_USER_NICKNAME  TEXT, -- '发送用户昵称'
+    CREATE_BY           TEXT, -- '创建人'
+    CREATE_TIME         INTEGER, -- '创建时间'
+    UPDATE_BY           TEXT, -- '修改人'
+    UPDATE_TIME         INTEGER  -- '修改时间'
+    QUOTE_MSG_ID        TEXT, -- '引用消息ID'
+    SEND_FLAG           TEXT -- '消息方向(0:接收,1:发送)'
 );
 
 -- 唯一索引: 微信ID + 消息ID
-CREATE UNIQUE INDEX IF NOT EXISTS IX_T_BEE_CHAT_MSG_WI 
-    ON T_BEE_CHAT_MSG (WECHAT_ID, MSG_ID);
+CREATE UNIQUE INDEX IF NOT EXISTS IX_T_BEE_CHAT_MSG_WCM 
+    ON T_BEE_CHAT_MSG (WECHAT_ID, 'CHAT_TYPE', MSG_ID);
 
 -- 单字段索引
 CREATE INDEX IF NOT EXISTS IX_T_BEE_CHAT_MSG_S 
@@ -149,12 +156,15 @@ CREATE TABLE IF NOT EXISTS T_BEE_CHAT_CONVO (
     CONVO_TYPE           TEXT, -- '会话类型(1:私聊,2:群聊,3:模拟)'
     TOP_FLAG             TEXT, -- '置顶标识(1:已置顶,0:未置顶)'
     DISTURB_FLAG         TEXT, -- '免打扰标识(1:已免打扰,0:未免打扰)'
+    LAST_MSG_ID          TEXT, -- '最后一条消息ID'
     CONTENT              TEXT, -- '消息内容'
-    MSG_TIME             TEXT, -- '消息时间'
+    MSG_TIME             INTEGER, -- '消息时间'
     CREATE_BY            TEXT, -- '创建人'
-    CREATE_TIME          TEXT, -- '创建时间'
+    CREATE_TIME          INTEGER, -- '创建时间'
     UPDATE_BY            TEXT, -- '修改人'
-    UPDATE_TIME          TEXT  -- '修改时间'
+    UPDATE_TIME          INTEGER  -- '修改时间'
+    DRAFT                TEXT, -- '草稿内容'
+    UNREAD_COUNT         INTEGER DEFAULT 0 -- '未读消息数'
 );
 
 -- 唯一索引: 微信ID + 会话ID

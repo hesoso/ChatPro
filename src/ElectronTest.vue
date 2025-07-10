@@ -1,6 +1,6 @@
 <script setup lang="ts">
 const handleInsertMeesage = () => {
-	window.databaseApi.addMessage({
+	window.databaseApi.onMessage({
 		id: '1008611',
 		senderId: '123',
 		message: 'this is a message!',

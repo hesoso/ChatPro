@@ -25,7 +25,7 @@ declare namespace NodeJS {
 interface Window {
   ipcRenderer: import('electron').IpcRenderer
   databaseApi: {
-    addMessage: <T>(args: T) => boolean
+    onMessage: <T>(args: T) => boolean
     fetchChatData: <T>(args: T) => []
   }
   bridge: {

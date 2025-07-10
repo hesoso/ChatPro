@@ -1,7 +1,7 @@
 "use strict";
 const electron = require("electron");
 var DB_EVENTS = /* @__PURE__ */ ((DB_EVENTS2) => {
-  DB_EVENTS2["AddMessage"] = "db:add-message";
+  DB_EVENTS2["OnMessage"] = "db:on-message";
   DB_EVENTS2["GetMessages"] = "db:get-messages";
   DB_EVENTS2["GetChatData"] = "db:query-chat-data";
   return DB_EVENTS2;
@@ -18,7 +18,7 @@ electron.contextBridge.exposeInMainWorld("databaseApi", {
    * @param messageData - 消息数据。
    * @returns Promise，解析为包含 success 和 data (包含 id 和 timestamp) / error 的对象。
    */
-  addMessage: (messageData) => electron.ipcRenderer.invoke(DB_EVENTS.AddMessage, messageData),
+  onMessage: (messageData) => electron.ipcRenderer.invoke(DB_EVENTS.OnMessage, messageData),
   /**
    * 根据会话ID获取消息列表。
    * @param params - 包含 sessionId 和可选分页参数的对象。

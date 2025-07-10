@@ -1,17 +1,24 @@
 <script setup lang="ts">
-const handleInsertMeesage = () => {
-	window.db.addMessage({
-		id: '1008611',
-		senderId: '123',
-		message: 'this is a message!'
-	})
-}
 
-const handleQueryMeesage = () => {
-	window.db.fetchChatData({
-		messageId: '172'
-	})
-}
+window.databaseApi.onMessage({
+	"draft": '213',
+            "guid": "6f4e4607-defc-339d-8d4f-180a24bbd5c8",
+            "sender": "7881302256961285",
+            "receiver": "10737336402983720",
+            "senderNickname": "那年十八",
+            "msgId": "6038979939951729151",
+            "msgTime": "1751506557",
+            "room": true,
+            "contentType": 3,
+            "content": {
+                "type_url": "type.googleapis.com/protobuf.common.TextNotice",
+                "value": {
+                    "content": "hello bee"
+                }
+            }
+					}
+)
+
 </script>
 
 <template>

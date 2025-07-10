@@ -10,8 +10,404 @@ function getResourcePath(...paths) {
   }
   return path.join(process.resourcesPath, ...paths);
 }
+class MessageManager {
+  constructor(db2) {
+    this.db = db2;
+  }
+  // 插入单条消息
+  insertMessage(msg) {
+    try {
+      if (this.messageExists(msg.wechatId, msg.chatType, msg.msgId)) {
+        console.log(`消息已存在: ${msg.msgId}`);
+        return false;
+      }
+      const stmt = this.db.prepare(
+        `INSERT INTO T_BEE_CHAT_MSG (
+          WECHAT_ID, CHAT_TYPE, SENDER, SENDER_AVATAR, SENDER_NICKNAME,
+          RECEIVER, RECEIVER_AVATAR, RECEIVER_NICKNAME, MSG_ID, CONTENT_TYPE,
+          CONTENT, SEND_FLAG, CREATE_TIME, UPDATE_TIME, QUOTE_MSG_ID
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      );
+      stmt.run(
+        msg.wechatId,
+        msg.chatType,
+        msg.sender,
+        msg.senderAvatar,
+        msg.senderNickname,
+        msg.receiver,
+        msg.receiverAvatar,
+        msg.receiverNickname,
+        msg.msgId,
+        msg.contentType,
+        msg.content,
+        msg.sendFlag,
+        Date.now(),
+        Date.now(),
+        msg.quoteMsgId || ""
+      );
+      return true;
+    } catch (error) {
+      console.error("插入消息失败:", error);
+      return false;
+    }
+  }
+  // 批量插入消息（事务处理）
+  insertMessages(messages) {
+    const insertStmt = this.db.prepare(
+      `INSERT OR IGNORE INTO T_BEE_CHAT_MSG (
+        WECHAT_ID, CHAT_TYPE, SENDER, SENDER_AVATAR, SENDER_NICKNAME,
+        RECEIVER, RECEIVER_AVATAR, RECEIVER_NICKNAME, MSG_ID, CONTENT_TYPE,
+        CONTENT, SEND_FLAG, CREATE_TIME, UPDATE_TIME, QUOTE_MSG_ID
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+    );
+    const insertMany = this.db.transaction((msgs) => {
+      let count = 0;
+      for (const msg of msgs) {
+        if (this.messageExists(msg.wechatId, msg.chatType, msg.msgId)) {
+          console.log(`消息已存在: ${msg.msgId}`);
+          break;
+        }
+        try {
+          insertStmt.run(
+            msg.wechatId,
+            msg.chatType,
+            msg.sender,
+            msg.senderAvatar,
+            msg.senderNickname,
+            msg.receiver,
+            msg.receiverAvatar,
+            msg.receiverNickname,
+            msg.msgId,
+            msg.contentType,
+            msg.content,
+            msg.sendFlag,
+            Date.now(),
+            Date.now(),
+            msg.quoteMsgId || ""
+          );
+          count++;
+        } catch (error) {
+          console.error(`插入消息 ${msg.msgId} 失败:`, error);
+        }
+      }
+      return count;
+    });
+    return insertMany(messages);
+  }
+  // 检查消息是否存在
+  messageExists(wechatId, chatType, msgId) {
+    const stmt = this.db.prepare(
+      `SELECT 1 FROM T_BEE_CHAT_MSG 
+       WHERE WECHAT_ID = ? AND CHAT_TYPE = ? AND MSG_ID = ? LIMIT 1`
+    );
+    return !!stmt.get(wechatId, chatType, msgId);
+  }
+  // 删除单条消息
+  deleteMessage(wechatId, chatType, msgId) {
+    try {
+      const stmt = this.db.prepare(
+        `DELETE FROM T_BEE_CHAT_MSG 
+         WHERE WECHAT_ID = ? AND CHAT_TYPE = ? AND MSG_ID = ?`
+      );
+      const result = stmt.run(wechatId, chatType, msgId);
+      return result.changes > 0;
+    } catch (error) {
+      console.error("删除消息失败:", error);
+      return false;
+    }
+  }
+  // 根据会话删除消息
+  deleteMessagesBySession(wechatId, convoId, chatType) {
+    try {
+      let condition = "";
+      if (chatType === "1") {
+        condition = `(SENDER = ? OR RECEIVER = ?)`;
+      } else if (chatType === "2") {
+        condition = `RECEIVER = ?`;
+      } else {
+        throw new Error(`不支持的聊天类型: ${chatType}`);
+      }
+      const stmt = this.db.prepare(
+        `DELETE FROM T_BEE_CHAT_MSG 
+         WHERE WECHAT_ID = ? AND CHAT_TYPE = ? AND ${condition}`
+      );
+      const params = chatType === "1" ? [wechatId, chatType, convoId, convoId] : [wechatId, chatType, convoId];
+      const result = stmt.run(...params);
+      return result.changes;
+    } catch (error) {
+      console.error("删除会话消息失败:", error);
+      return 0;
+    }
+  }
+  // 获取消息列表（按会话和时间范围）
+  getMessages(wechatId, convoId, chatType, options = {}) {
+    try {
+      let conditions = [
+        "WECHAT_ID = ?",
+        "CHAT_TYPE = ?"
+      ];
+      const params = [wechatId, chatType];
+      if (chatType === "1") {
+        conditions.push("(SENDER = ? OR RECEIVER = ?)");
+        params.push(convoId, convoId);
+      } else if (chatType === "2") {
+        conditions.push("RECEIVER = ?");
+        params.push(convoId);
+      } else {
+        throw new Error(`不支持的聊天类型: ${chatType}`);
+      }
+      if (options.beforeTime) {
+        conditions.push("CREATE_TIME < ?");
+        params.push(options.beforeTime);
+      }
+      if (options.afterTime) {
+        conditions.push("CREATE_TIME > ?");
+        params.push(options.afterTime);
+      }
+      let query = `SELECT * FROM T_BEE_CHAT_MSG WHERE ${conditions.join(" AND ")} 
+                   ORDER BY CREATE_TIME DESC`;
+      if (options.limit) {
+        query += ` LIMIT ${options.limit}`;
+        if (options.offset) {
+          query += ` OFFSET ${options.offset}`;
+        }
+      }
+      const stmt = this.db.prepare(query);
+      return stmt.all(...params);
+    } catch (error) {
+      console.error("获取消息列表失败:", error);
+      return [];
+    }
+  }
+  // 获取最近一条消息
+  getLastMessage(wechatId, convoId, chatType) {
+    try {
+      const messages = this.getMessages(wechatId, convoId, chatType, { limit: 1 });
+      return messages.length > 0 ? messages[0] : null;
+    } catch (error) {
+      console.error("获取最后一条消息失败:", error);
+      return null;
+    }
+  }
+}
+class SessionManager {
+  constructor(db2) {
+    this.db = db2;
+  }
+  getSessionInfo(msg) {
+    const isGroupChat = msg.chatType === "2";
+    return {
+      wechatId: msg.wechatId,
+      convoId: isGroupChat ? msg.receiver : msg.sendFlag === "1" ? msg.receiver : msg.sender,
+      convoType: msg.chatType
+    };
+  }
+  // 检查会话是否存在
+  checkSessionExists(wechatId, convoId) {
+    const stmt = this.db.prepare(
+      `SELECT 1 FROM T_BEE_CHAT_CONVO 
+       WHERE WECHAT_ID = ? AND CONVO_ID = ? LIMIT 1`
+    );
+    return !!stmt.get(wechatId, convoId);
+  }
+  // 创建会话
+  createSession(msg, convoId, convoType) {
+    const isGroup = convoType === "2";
+    const { avatar, nickname } = this.getSessionProfile(msg, convoId, isGroup);
+    const stmt = this.db.prepare(
+      `INSERT INTO T_BEE_CHAT_CONVO (
+        WECHAT_ID, CONVO_ID, CONVO_NICKNAME, CONVO_AVATAR, CONVO_TYPE,
+        TOP_FLAG, DISTURB_FLAG, LAST_MSG_ID, CONTENT, MSG_TIME,
+        CREATE_TIME, UPDATE_TIME, UNREAD_COUNT, DRAFT
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+    );
+    stmt.run(
+      msg.wechatId,
+      convoId,
+      nickname || (isGroup ? "群聊" : "私聊"),
+      avatar || "",
+      convoType,
+      "0",
+      // 未置顶
+      "0",
+      // 未免打扰
+      "",
+      // 初始无消息ID
+      "",
+      // 初始无内容
+      0,
+      // 初始消息时间
+      Date.now(),
+      Date.now(),
+      msg.sendFlag === "0" ? 1 : 0,
+      // 接收消息时未读数为1
+      ""
+      // 空草稿
+    );
+  }
+  // 更新会话的最后一条消息
+  updateSessionLastMsg(msg, convoId) {
+    const updateFields = [
+      "LAST_MSG_ID = ?",
+      "CONTENT = ?",
+      "MSG_TIME = ?",
+      "UPDATE_TIME = ?"
+    ];
+    const params = [
+      msg.msgId,
+      msg.content,
+      Date.now(),
+      Date.now()
+    ];
+    if (msg.sendFlag === "0") {
+      updateFields.push("UNREAD_COUNT = UNREAD_COUNT + 1");
+    } else {
+      updateFields.push("DRAFT = ?");
+      params.push("");
+    }
+    const stmt = this.db.prepare(
+      `UPDATE T_BEE_CHAT_CONVO 
+       SET ${updateFields.join(", ")} 
+       WHERE WECHAT_ID = ? AND CONVO_ID = ?`
+    );
+    stmt.run(...params, msg.wechatId, convoId);
+  }
+  // 获取会话列表（分页+排序）
+  getSessions(wechatId, options = {}) {
+    try {
+      const conditions = ["WECHAT_ID = ?"];
+      const params = [wechatId];
+      if (options.search) {
+        conditions.push("(CONVO_NICKNAME LIKE ? OR CONTENT LIKE ?)");
+        params.push(`%${options.search}%`, `%${options.search}%`);
+      }
+      if (options.onlyUnread) {
+        conditions.push("UNREAD_COUNT > 0");
+      }
+      let query = `SELECT * FROM T_BEE_CHAT_CONVO 
+                   WHERE ${conditions.join(" AND ")} 
+                   ORDER BY MSG_TIME DESC`;
+      if (options.limit) {
+        query += ` LIMIT ${options.limit}`;
+        if (options.offset) {
+          query += ` OFFSET ${options.offset}`;
+        }
+      }
+      const stmt = this.db.prepare(query);
+      return stmt.all(...params);
+    } catch (error) {
+      console.error("获取会话列表失败:", error);
+      return [];
+    }
+  }
+  // 删除会话（及相关消息）
+  deleteSession(wechatId, convoId) {
+    try {
+      this.db.exec("BEGIN TRANSACTION");
+      try {
+        const session = this.getSession(wechatId, convoId);
+        if (!session) {
+          return false;
+        }
+        const messageManager2 = new MessageManager(this.db);
+        messageManager2.deleteMessagesBySession(
+          wechatId,
+          convoId,
+          session.CONVO_TYPE
+        );
+        const deleteStmt = this.db.prepare(
+          `DELETE FROM T_BEE_CHAT_CONVO 
+           WHERE WECHAT_ID = ? AND CONVO_ID = ?`
+        );
+        deleteStmt.run(wechatId, convoId);
+        this.db.exec("COMMIT");
+        return true;
+      } catch (innerError) {
+        this.db.exec("ROLLBACK");
+        throw innerError;
+      }
+    } catch (error) {
+      console.error("删除会话失败:", error);
+      return false;
+    }
+  }
+  // 更新会话草稿
+  updateSessionDraft(wechatId, convoId, draft) {
+    try {
+      const stmt = this.db.prepare(
+        `UPDATE T_BEE_CHAT_CONVO 
+         SET DRAFT = ?, UPDATE_TIME = ? 
+         WHERE WECHAT_ID = ? AND CONVO_ID = ?`
+      );
+      stmt.run(draft, Date.now(), wechatId, convoId);
+      return true;
+    } catch (error) {
+      console.error("更新会话草稿失败:", error);
+      return false;
+    }
+  }
+  // 重置会话未读数
+  resetUnreadCount(wechatId, convoId) {
+    try {
+      const stmt = this.db.prepare(
+        `UPDATE T_BEE_CHAT_CONVO 
+         SET UNREAD_COUNT = 0, UPDATE_TIME = ? 
+         WHERE WECHAT_ID = ? AND CONVO_ID = ?`
+      );
+      stmt.run(Date.now(), wechatId, convoId);
+      return true;
+    } catch (error) {
+      console.error("重置未读数失败:", error);
+      return false;
+    }
+  }
+  // 获取单个会话详情
+  getSession(wechatId, convoId) {
+    try {
+      const stmt = this.db.prepare(
+        `SELECT * FROM T_BEE_CHAT_CONVO 
+         WHERE WECHAT_ID = ? AND CONVO_ID = ? LIMIT 1`
+      );
+      return stmt.get(wechatId, convoId) || null;
+    } catch (error) {
+      console.error("获取会话详情失败:", error);
+      return null;
+    }
+  }
+  getSessionProfile(msg, convoId, isGroup) {
+    if (isGroup) {
+      const room = this.getGroupInfo(convoId);
+      return {
+        avatar: (room == null ? void 0 : room.ROOM_AVATAR) || msg.receiverAvatar || "",
+        nickname: (room == null ? void 0 : room.ROOM_NICKNAME) || msg.receiverNickname || "群聊"
+      };
+    } else {
+      const contact = this.getContactInfo(convoId);
+      return {
+        avatar: (contact == null ? void 0 : contact.CONTACT_AVATAR) || msg.senderAvatar || "",
+        nickname: (contact == null ? void 0 : contact.CONTACT_NICKNAME) || msg.senderNickname || "私聊"
+      };
+    }
+  }
+  getGroupInfo(roomId) {
+    const stmt = this.db.prepare(
+      `SELECT ROOM_AVATAR, ROOM_NICKNAME FROM T_BEE_CHAT_ROOM 
+       WHERE ROOM_ID = ? LIMIT 1`
+    );
+    return stmt.get(roomId);
+  }
+  getContactInfo(contactWechatId) {
+    const stmt = this.db.prepare(
+      `SELECT CONTACT_AVATAR, CONTACT_NICKNAME FROM T_BEE_CHAT_CONTACT 
+       WHERE CONTACT_WECHAT_ID = ? LIMIT 1`
+    );
+    return stmt.get(contactWechatId);
+  }
+}
 const dbPath = path.join(app.getPath("userData"), "chat_app.db");
 let db;
+let messageManager;
+let sessionManager;
 function initializeDatabase() {
   const dbDir = path.dirname(dbPath);
   if (!fs.existsSync(dbDir)) {
@@ -19,6 +415,8 @@ function initializeDatabase() {
   }
   console.log("数据库已成功创建============>", dbDir);
   db = new Database(dbPath, { verbose: console.log });
+  messageManager = new MessageManager(db);
+  sessionManager = new SessionManager(db);
   try {
     const sqlScript = fs.readFileSync(getResourcePath("database/schema/ddl.sql"), "utf8");
     db.exec(sqlScript);
@@ -38,66 +436,8 @@ function getDB() {
   }
   return db;
 }
-function checkRecordExists(table, key, value) {
-  const db2 = getDB();
-  const sql = `SELECT 1 FROM ${table} WHERE ${key} = ?`;
-  const checkStmt = db2.prepare(sql);
-  return !!checkStmt.get(value);
-}
-function addMessage(messageData, db2 = getDB()) {
-  if (checkRecordExists("users", "wxid", messageData.sender_id_ref)) ;
-  const timestamp = Date.now();
-  const sql = `
-        INSERT INTO messages (
-            session_id, sender_id_ref, receiver_id_ref, message_type, 
-            content, timestamp, is_from_me, quote_message_id, raw_data
-        )
-        VALUES (
-            @session_id, @sender_id_ref, @receiver_id_ref, @message_type, 
-            @content, @timestamp, @is_from_me, @quote_message_id, @raw_data
-        );
-    `;
-  try {
-    const stmt = db2.prepare(sql);
-    const result = stmt.run({
-      ...messageData,
-      message_type: messageData.message_type || "text",
-      // 默认消息类型
-      is_from_me: messageData.is_from_me === void 0 ? 0 : messageData.is_from_me ? 1 : 0,
-      timestamp
-      // 使用我们生成的 Unix 毫秒时间戳
-    });
-    return { id: Number(result.lastInsertRowid), timestamp };
-  } catch (error) {
-    console.error("Failed to add message:", error);
-    throw error;
-  }
-}
-function getMessagesBySessionId(sessionId, limit = 50, offset = 0, orderByTimestamp = "DESC") {
-  const dbInstance = getDB();
-  const sql = `
-        SELECT id, session_id, sender_id_ref, receiver_id_ref, message_type, 
-               content, timestamp, status, is_from_me, quote_message_id, raw_data
-        FROM messages
-        WHERE session_id = @sessionId
-        ORDER BY timestamp ${orderByTimestamp === "ASC" ? "ASC" : "DESC"} -- 防止SQL注入，显式检查值
-        LIMIT @limit OFFSET @offset;
-    `;
-  try {
-    const stmt = dbInstance.prepare(sql);
-    const messages = stmt.all({ sessionId, limit, offset });
-    return messages.map((msg) => ({
-      ...msg,
-      is_from_me: Boolean(msg.is_from_me)
-      // 将 0/1 转换为 boolean
-    }));
-  } catch (error) {
-    console.error(`Failed to get messages for session ${sessionId}:`, error);
-    return [];
-  }
-}
 var DB_EVENTS = /* @__PURE__ */ ((DB_EVENTS2) => {
-  DB_EVENTS2["AddMessage"] = "db:add-message";
+  DB_EVENTS2["OnMessage"] = "db:on-message";
   DB_EVENTS2["GetMessages"] = "db:get-messages";
   DB_EVENTS2["GetChatData"] = "db:query-chat-data";
   return DB_EVENTS2;
@@ -111,34 +451,32 @@ const regsiterBaseHandler = () => {
   });
 };
 const regsiterDatabaseHandler = () => {
-  ipcMain.handle(DB_EVENTS.AddMessage, async (_event, messageData) => {
+  ipcMain.handle(DB_EVENTS.OnMessage, async (_event, msg) => {
+    console.log("regsiterDatabaseHandler收到", msg);
+    const db2 = getDB();
     try {
-      const result = addMessage(messageData);
-      return { success: true, data: result };
+      db2.transaction(() => {
+        const convoInfo = sessionManager.getSessionInfo(msg);
+        const convoExists = sessionManager.checkSessionExists(
+          convoInfo.wechatId,
+          convoInfo.convoId
+        );
+        if (!convoExists) {
+          sessionManager.createSession(
+            msg,
+            convoInfo.convoId,
+            convoInfo.convoType
+          );
+        }
+        messageManager.insertMessage(msg);
+        sessionManager.updateSessionLastMsg(msg, convoInfo.convoId);
+      })();
     } catch (error) {
-      console.error("IPC Error - db:add-message:", error);
-      return { success: false, error: error.message || "Failed to add message" };
-    }
-  });
-  ipcMain.handle(DB_EVENTS.GetMessages, async (_event, params) => {
-    try {
-      const { sessionId, limit, offset, orderByTimestamp } = params;
-      const messages = getMessagesBySessionId(sessionId, limit, offset, orderByTimestamp);
-      return { success: true, data: messages };
-    } catch (error) {
-      console.error("IPC Error - db:get-messages:", error);
-      return { success: false, error: error.message || "Failed to get messages" };
-    }
-  });
-  ipcMain.handle(DB_EVENTS.GetChatData, async (_event, params) => {
-    try {
-      const sessionId = params.wxid;
-      const { limit, offset, orderByTimestamp } = params;
-      const messages = getMessagesBySessionId(sessionId, limit, offset, orderByTimestamp);
-      return { success: true, data: messages };
-    } catch (error) {
-      console.error("IPC Error - db:query-chat-data:", error);
-      return { success: false, error: error.message || "Failed to query chat data" };
+      console.error("消息处理失败:", error);
+      _event.sender.send("message-process-error", {
+        msgId: msg.msgId,
+        error: error.message
+      });
     }
   });
 };
