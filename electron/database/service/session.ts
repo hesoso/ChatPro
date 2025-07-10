@@ -8,14 +8,12 @@ interface SessionInfo {
 }
 
 export default class SessionManager {
-  constructor(private db: Database.Database) {}
+  constructor(private db: Database.Database) { }
 
   getSessionInfo(msg: any): SessionInfo {
-    const isGroupChat = msg.chatType === '2';
     return {
       wechatId: msg.wechatId,
-      convoId: isGroupChat ? msg.receiver : 
-               msg.sendFlag === '1' ? msg.receiver : msg.sender,
+      convoId: msg.wechatId === msg.receiver ? msg.sender : msg.receiver,
       convoType: msg.chatType
     };
   }
@@ -31,32 +29,30 @@ export default class SessionManager {
 
   // 创建会话
   createSession(msg: any, convoId: string, convoType: string): void {
-    const isGroup = convoType === '2';
-    const { avatar, nickname } = this.getSessionProfile(msg, convoId, isGroup);
+    const { avatar, nickname } = this.getSessionProfile(msg, convoId);
 
     const stmt = this.db.prepare(
       `INSERT INTO T_BEE_CHAT_CONVO (
         WECHAT_ID, CONVO_ID, CONVO_NICKNAME, CONVO_AVATAR, CONVO_TYPE,
         TOP_FLAG, DISTURB_FLAG, LAST_MSG_ID, CONTENT, MSG_TIME,
-        CREATE_TIME, UPDATE_TIME, UNREAD_COUNT, DRAFT
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+        CREATE_TIME, UPDATE_TIME, UNREAD_COUNT
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
     );
 
     stmt.run(
       msg.wechatId,
       convoId,
-      nickname || (isGroup ? '群聊' : '私聊'),
+      nickname,
       avatar || '',
       convoType,
       '0', // 未置顶
       '0', // 未免打扰
-      '',  // 初始无消息ID
-      '',  // 初始无内容
-      0,   // 初始消息时间
+      msg.msgId,  // 初始无消息ID
+      msg.content,  // 初始无内容
+      msg.msgTime,   // 初始消息时间
       Date.now(),
       Date.now(),
       msg.sendFlag === '0' ? 1 : 0, // 接收消息时未读数为1
-      ''   // 空草稿
     );
   }
 
@@ -107,27 +103,27 @@ export default class SessionManager {
     try {
       const conditions = ['WECHAT_ID = ?'];
       const params: any[] = [wechatId];
-      
+
       if (options.search) {
         conditions.push('(CONVO_NICKNAME LIKE ? OR CONTENT LIKE ?)');
         params.push(`%${options.search}%`, `%${options.search}%`);
       }
-      
+
       if (options.onlyUnread) {
         conditions.push('UNREAD_COUNT > 0');
       }
-      
+
       let query = `SELECT * FROM T_BEE_CHAT_CONVO 
                    WHERE ${conditions.join(' AND ')} 
                    ORDER BY MSG_TIME DESC`;
-      
+
       if (options.limit) {
         query += ` LIMIT ${options.limit}`;
         if (options.offset) {
           query += ` OFFSET ${options.offset}`;
         }
       }
-      
+
       const stmt = this.db.prepare(query);
       return stmt.all(...params);
     } catch (error) {
@@ -141,30 +137,30 @@ export default class SessionManager {
     try {
       // 启动事务
       this.db.exec('BEGIN TRANSACTION');
-      
+
       try {
         // 1. 获取会话类型
         const session = this.getSession(wechatId, convoId);
         if (!session) {
           return false;
         }
-        
+
         // 2. 删除相关消息
         const messageManager = new MessageManager(this.db);
         messageManager.deleteMessagesBySession(
-          wechatId, 
-          convoId, 
+          wechatId,
+          convoId,
           session.CONVO_TYPE
         );
-        
+
         // 3. 删除会话
         const deleteStmt = this.db.prepare(
           `DELETE FROM T_BEE_CHAT_CONVO 
            WHERE WECHAT_ID = ? AND CONVO_ID = ?`
         );
-        
+
         deleteStmt.run(wechatId, convoId);
-        
+
         // 提交事务
         this.db.exec('COMMIT');
         return true;
@@ -186,7 +182,7 @@ export default class SessionManager {
          SET DRAFT = ?, UPDATE_TIME = ? 
          WHERE WECHAT_ID = ? AND CONVO_ID = ?`
       );
-      
+
       stmt.run(draft, Date.now(), wechatId, convoId);
       return true;
     } catch (error) {
@@ -203,7 +199,7 @@ export default class SessionManager {
          SET UNREAD_COUNT = 0, UPDATE_TIME = ? 
          WHERE WECHAT_ID = ? AND CONVO_ID = ?`
       );
-      
+
       stmt.run(Date.now(), wechatId, convoId);
       return true;
     } catch (error) {
@@ -219,7 +215,7 @@ export default class SessionManager {
         `SELECT * FROM T_BEE_CHAT_CONVO 
          WHERE WECHAT_ID = ? AND CONVO_ID = ? LIMIT 1`
       );
-      
+
       return stmt.get(wechatId, convoId) || null;
     } catch (error) {
       console.error('获取会话详情失败:', error);
@@ -227,26 +223,26 @@ export default class SessionManager {
     }
   }
 
-  private getSessionProfile(msg: any, convoId: string, isGroup: boolean) {
-    if (isGroup) {
+  private getSessionProfile(msg: any, convoId: string) {
+    if (msg.chatType === '2') {
       const room = this.getGroupInfo(convoId);
       return {
         avatar: room?.ROOM_AVATAR || msg.receiverAvatar || '',
-        nickname: room?.ROOM_NICKNAME || msg.receiverNickname || '群聊'
+        nickname: room?.ROOM_NICKNAME || msg.receiverNicknam
       };
     } else {
       const contact = this.getContactInfo(convoId);
       return {
         avatar: contact?.CONTACT_AVATAR || msg.senderAvatar || '',
-        nickname: contact?.CONTACT_NICKNAME || msg.senderNickname || '私聊'
+        nickname: contact?.CONTACT_NICKNAME || msg.senderNickname
       };
     }
   }
 
   private getGroupInfo(roomId: string) {
     const stmt = this.db.prepare<string, {
-        ROOM_AVATAR: string;
-        ROOM_NICKNAME: string;
+      ROOM_AVATAR: string;
+      ROOM_NICKNAME: string;
     }>(
       `SELECT ROOM_AVATAR, ROOM_NICKNAME FROM T_BEE_CHAT_ROOM 
        WHERE ROOM_ID = ? LIMIT 1`
@@ -256,8 +252,8 @@ export default class SessionManager {
 
   private getContactInfo(contactWechatId: string) {
     const stmt = this.db.prepare<string, {
-        CONTACT_AVATAR: string;
-        CONTACT_NICKNAME: string;
+      CONTACT_AVATAR: string;
+      CONTACT_NICKNAME: string;
     }>(
       `SELECT CONTACT_AVATAR, CONTACT_NICKNAME FROM T_BEE_CHAT_CONTACT 
        WHERE CONTACT_WECHAT_ID = ? LIMIT 1`

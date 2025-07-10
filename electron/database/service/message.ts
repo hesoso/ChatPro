@@ -1,7 +1,7 @@
 import Database from 'better-sqlite3';
 
 export default class MessageManager {
-  constructor(private db: Database.Database) {}
+  constructor(private db: Database.Database) { }
 
   // 插入单条消息
   insertMessage(msg: any): boolean {
@@ -32,12 +32,12 @@ export default class MessageManager {
         msg.msgId,
         msg.contentType,
         msg.content,
-        msg.sendFlag,
+        msg.wechatId === msg.sender ? '1' : '0',
         Date.now(),
         Date.now(),
         msg.quoteMsgId || ''
       );
-      
+
       return true;
     } catch (error) {
       console.error('插入消息失败:', error);
@@ -60,8 +60,8 @@ export default class MessageManager {
       for (const msg of msgs) {
         // 检查消息是否已存在
         if (this.messageExists(msg.wechatId, msg.chatType, msg.msgId)) {
-            console.log(`消息已存在: ${msg.msgId}`);
-            break
+          console.log(`消息已存在: ${msg.msgId}`);
+          break
         }
         try {
           insertStmt.run(
@@ -108,7 +108,7 @@ export default class MessageManager {
         `DELETE FROM T_BEE_CHAT_MSG 
          WHERE WECHAT_ID = ? AND CHAT_TYPE = ? AND MSG_ID = ?`
       );
-      
+
       const result = stmt.run(wechatId, chatType, msgId);
       return result.changes > 0;
     } catch (error) {
@@ -137,10 +137,10 @@ export default class MessageManager {
          WHERE WECHAT_ID = ? AND CHAT_TYPE = ? AND ${condition}`
       );
 
-      const params = chatType === '1' 
-        ? [wechatId, chatType, convoId, convoId] 
+      const params = chatType === '1'
+        ? [wechatId, chatType, convoId, convoId]
         : [wechatId, chatType, convoId];
-      
+
       const result = stmt.run(...params);
       return result.changes;
     } catch (error) {
@@ -167,9 +167,9 @@ export default class MessageManager {
         'WECHAT_ID = ?',
         'CHAT_TYPE = ?'
       ];
-      
+
       const params: any[] = [wechatId, chatType];
-      
+
       // 根据会话类型添加条件
       if (chatType === '1') {
         // 私聊：sender或receiver等于会话ID
@@ -182,22 +182,22 @@ export default class MessageManager {
       } else {
         throw new Error(`不支持的聊天类型: ${chatType}`);
       }
-      
+
       // 时间范围条件
       if (options.beforeTime) {
         conditions.push('CREATE_TIME < ?');
         params.push(options.beforeTime);
       }
-      
+
       if (options.afterTime) {
         conditions.push('CREATE_TIME > ?');
         params.push(options.afterTime);
       }
-      
+
       // 构建查询
       let query = `SELECT * FROM T_BEE_CHAT_MSG WHERE ${conditions.join(' AND ')} 
                    ORDER BY CREATE_TIME DESC`;
-      
+
       // 分页处理
       if (options.limit) {
         query += ` LIMIT ${options.limit}`;
@@ -205,7 +205,7 @@ export default class MessageManager {
           query += ` OFFSET ${options.offset}`;
         }
       }
-      
+
       const stmt = this.db.prepare(query);
       return stmt.all(...params);
     } catch (error) {

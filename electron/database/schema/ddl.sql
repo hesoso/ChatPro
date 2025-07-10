@@ -123,7 +123,7 @@ CREATE TABLE IF NOT EXISTS T_BEE_CHAT_MSG (
     CREATE_BY           TEXT, -- '创建人'
     CREATE_TIME         INTEGER, -- '创建时间'
     UPDATE_BY           TEXT, -- '修改人'
-    UPDATE_TIME         INTEGER  -- '修改时间'
+    UPDATE_TIME         INTEGER,  -- '修改时间'
     QUOTE_MSG_ID        TEXT, -- '引用消息ID'
     SEND_FLAG           TEXT -- '消息方向(0:接收,1:发送)'
 );
@@ -162,7 +162,7 @@ CREATE TABLE IF NOT EXISTS T_BEE_CHAT_CONVO (
     CREATE_BY            TEXT, -- '创建人'
     CREATE_TIME          INTEGER, -- '创建时间'
     UPDATE_BY            TEXT, -- '修改人'
-    UPDATE_TIME          INTEGER  -- '修改时间'
+    UPDATE_TIME          INTEGER,  -- '修改时间'
     DRAFT                TEXT, -- '草稿内容'
     UNREAD_COUNT         INTEGER DEFAULT 0 -- '未读消息数'
 );

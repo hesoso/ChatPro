@@ -40,7 +40,7 @@ class MessageManager {
         msg.msgId,
         msg.contentType,
         msg.content,
-        msg.sendFlag,
+        msg.wechatId === msg.sender ? "1" : "0",
         Date.now(),
         Date.now(),
         msg.quoteMsgId || ""
@@ -195,10 +195,9 @@ class SessionManager {
     this.db = db2;
   }
   getSessionInfo(msg) {
-    const isGroupChat = msg.chatType === "2";
     return {
       wechatId: msg.wechatId,
-      convoId: isGroupChat ? msg.receiver : msg.sendFlag === "1" ? msg.receiver : msg.sender,
+      convoId: msg.wechatId === msg.receiver ? msg.sender : msg.receiver,
       convoType: msg.chatType
     };
   }
@@ -212,37 +211,34 @@ class SessionManager {
   }
   // 创建会话
   createSession(msg, convoId, convoType) {
-    const isGroup = convoType === "2";
-    const { avatar, nickname } = this.getSessionProfile(msg, convoId, isGroup);
+    const { avatar, nickname } = this.getSessionProfile(msg, convoId);
     const stmt = this.db.prepare(
       `INSERT INTO T_BEE_CHAT_CONVO (
         WECHAT_ID, CONVO_ID, CONVO_NICKNAME, CONVO_AVATAR, CONVO_TYPE,
         TOP_FLAG, DISTURB_FLAG, LAST_MSG_ID, CONTENT, MSG_TIME,
-        CREATE_TIME, UPDATE_TIME, UNREAD_COUNT, DRAFT
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+        CREATE_TIME, UPDATE_TIME, UNREAD_COUNT
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
     );
     stmt.run(
       msg.wechatId,
       convoId,
-      nickname || (isGroup ? "群聊" : "私聊"),
+      nickname,
       avatar || "",
       convoType,
       "0",
       // 未置顶
       "0",
       // 未免打扰
-      "",
+      msg.msgId,
       // 初始无消息ID
-      "",
+      msg.content,
       // 初始无内容
-      0,
+      msg.msgTime,
       // 初始消息时间
       Date.now(),
       Date.now(),
-      msg.sendFlag === "0" ? 1 : 0,
+      msg.sendFlag === "0" ? 1 : 0
       // 接收消息时未读数为1
-      ""
-      // 空草稿
     );
   }
   // 更新会话的最后一条消息
@@ -374,18 +370,18 @@ class SessionManager {
       return null;
     }
   }
-  getSessionProfile(msg, convoId, isGroup) {
-    if (isGroup) {
+  getSessionProfile(msg, convoId) {
+    if (msg.chatType === "2") {
       const room = this.getGroupInfo(convoId);
       return {
         avatar: (room == null ? void 0 : room.ROOM_AVATAR) || msg.receiverAvatar || "",
-        nickname: (room == null ? void 0 : room.ROOM_NICKNAME) || msg.receiverNickname || "群聊"
+        nickname: (room == null ? void 0 : room.ROOM_NICKNAME) || msg.receiverNicknam
       };
     } else {
       const contact = this.getContactInfo(convoId);
       return {
         avatar: (contact == null ? void 0 : contact.CONTACT_AVATAR) || msg.senderAvatar || "",
-        nickname: (contact == null ? void 0 : contact.CONTACT_NICKNAME) || msg.senderNickname || "私聊"
+        nickname: (contact == null ? void 0 : contact.CONTACT_NICKNAME) || msg.senderNickname
       };
     }
   }
@@ -437,22 +433,13 @@ function getDB() {
   return db;
 }
 var DB_EVENTS = /* @__PURE__ */ ((DB_EVENTS2) => {
-  DB_EVENTS2["OnMessage"] = "db:on-message";
-  DB_EVENTS2["GetMessages"] = "db:get-messages";
-  DB_EVENTS2["GetChatData"] = "db:query-chat-data";
+  DB_EVENTS2["ON_MESSAGE"] = "DB:ON_MESSAGE";
+  DB_EVENTS2["GET_MESSAGES"] = "DB:GET_MESSAGES";
+  DB_EVENTS2["GET_SESSIONS"] = "DB:GET_SESSIONS";
   return DB_EVENTS2;
 })(DB_EVENTS || {});
-var BASE_EVENTS = /* @__PURE__ */ ((BASE_EVENTS2) => {
-  BASE_EVENTS2["Login"] = "base:login";
-  return BASE_EVENTS2;
-})(BASE_EVENTS || {});
-const regsiterBaseHandler = () => {
-  ipcMain.handle(BASE_EVENTS.Login, async (_event) => {
-  });
-};
 const regsiterDatabaseHandler = () => {
-  ipcMain.handle(DB_EVENTS.OnMessage, async (_event, msg) => {
-    console.log("regsiterDatabaseHandler收到", msg);
+  ipcMain.handle(DB_EVENTS.ON_MESSAGE, async (_event, msg) => {
     const db2 = getDB();
     try {
       db2.transaction(() => {
@@ -472,11 +459,39 @@ const regsiterDatabaseHandler = () => {
         sessionManager.updateSessionLastMsg(msg, convoInfo.convoId);
       })();
     } catch (error) {
-      console.error("消息处理失败:", error);
+      console.error("IPC Error - DB:ON_MESSAGE:", error);
       _event.sender.send("message-process-error", {
         msgId: msg.msgId,
         error: error.message
       });
+    }
+  });
+  ipcMain.handle(DB_EVENTS.GET_MESSAGES, async (_event, params) => {
+    try {
+      const messages = messageManager.getMessages(
+        params.wechatId,
+        params.convoId,
+        params.chatType,
+        params.options
+      );
+      console.log("===========================messages===========================", messages);
+      return { success: true, data: messages };
+    } catch (error) {
+      console.error("IPC Error - DB:GET_MESSAGES:", error);
+      return { success: false, error: error.message || "Failed to get messages" };
+    }
+  });
+  ipcMain.handle(DB_EVENTS.GET_SESSIONS, async (_event, params) => {
+    try {
+      const sessions = sessionManager.getSessions(
+        params.wechatId,
+        params.options
+      );
+      console.log("===========================messages===========================", sessions);
+      return { success: true, data: sessions };
+    } catch (error) {
+      console.error("IPC Error - DB:GET_SESSIONS:", error);
+      return { success: false, error: error.message || "Failed to query chat data" };
     }
   });
 };
@@ -567,7 +582,6 @@ app.on("will-quit", () => {
 app.whenReady().then(() => {
   initializeDatabase();
   createWindow();
-  regsiterBaseHandler();
   regsiterDatabaseHandler();
   registerBridgeHandler();
   win == null ? void 0 : win.webContents.openDevTools();
