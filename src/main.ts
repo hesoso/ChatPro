@@ -28,13 +28,10 @@ const mountApp = async (app) => {
   if (userStore.userInfo.host) {
     await initMessageSocket(userStore.userInfo)
     wsDeviceAuthReq(userStore.loginForm, () => {
-      app.mount('#app').$nextTick(async () => {
-        // Use contextBridge
-        window.ipcRenderer.on('main-process-message', (_event, message) => {
-          console.log(message)
-        })
-      })
+      app.mount('#app')
     })
+  } else {
+    app.mount('#app')
   }
 }
 
