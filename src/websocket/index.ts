@@ -1,6 +1,6 @@
 import { initProtobuf } from '../protobuf'
-import { NoticeType, ProtoBufferType } from '../enums/protobuf.ts'
-import { deviceAuthReqForm } from '../types/User'
+import { NoticeType } from '../enums/protobuf.ts'
+import { deviceAuthReqForm } from '../types/User.d.ts'
 import { ElMessage } from 'element-plus'
 import { useUserStore } from '../store/user.ts'
 import { useConversationStore } from '../store/useConversationStore.ts'
@@ -64,7 +64,6 @@ class MessageSocket {
       })
       this.deviceAuthCallback.length = 0
     } else if (res.noticeType === NoticeType.msgNewNotice) {
-      debugger
       const conversationStore = useConversationStore()
       const message = {
         "wechatId": '',

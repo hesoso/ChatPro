@@ -52,10 +52,10 @@ class MessageBuffer {
     return msgBuffer
   }
 
-  decodeBuffer(msg: any) {
+  decodeBuffer(msg: Buffer) {
     const buffer = new Uint8Array(msg)
     const decodedMsg = this.Msg.decode(buffer)
-    console.log('解码后的 Msg:', JSON.stringify(decodedMsg))
+    console.log('解码后的 Msg:', decodedMsg)
     const decodedAny = decodedMsg.data
 
     // 解码业务数据
