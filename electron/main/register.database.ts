@@ -1,6 +1,6 @@
 import { ipcMain } from 'electron'
-import { DB_EVENTS } from '../types/events'
-import { FieldConverter } from '../utils/filed.convert';
+import { DB_EVENTS } from '../types/enums'
+import { FieldConverter } from '../utils/field.convert';
 import { getDB, sessionManager, messageManager } from '../database/index'
 
 export const regsiterDatabaseHandler = () => {
@@ -51,7 +51,6 @@ export const regsiterDatabaseHandler = () => {
                 params.chatType,
                 params.options
             )
-            console.log('===========================messages===========================', messages)
             return { success: true, data: FieldConverter.convertResultSet(messages) }
         } catch (error) {
             console.error('IPC Error - DB:GET_MESSAGES:', error)
@@ -64,8 +63,7 @@ export const regsiterDatabaseHandler = () => {
                 params.wechatId,
                 params.options
             )
-            console.log('===========================messages===========================', sessions)
-            return { success: true, data: sessions }
+            return { success: true, data: FieldConverter.convertResultSet(sessions) }
         } catch (error) {
             console.error('IPC Error - DB:GET_SESSIONS:', error)
             return { success: false, error: (error as Error).message || 'Failed to query chat data' }

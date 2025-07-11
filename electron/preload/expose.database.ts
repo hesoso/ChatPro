@@ -1,5 +1,5 @@
 import { ipcRenderer, contextBridge } from 'electron'
-import { DB_EVENTS } from '../types/events'
+import { DB_EVENTS } from '../types/enums'
 
 
 
