@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package protobuf.consts;
+
+option java_outer_classname = "EnumNoticeTypeProto";
+
+enum EnumNoticeType {
+  // 通用
+  error = 0;                  // 异常(服务端->客服系统客户端)
+
+  msgNewNotice = 100;         // 新消息通知(协议->服务端->客服系统客户端)
+  msgSendReq = 101;           // 发送消息请求(客服系统客户端->服务端->协议)
+  msgSendResp = 102;          // 发送消息响应(服务端->客服系统客户端)
+
+  // Socket
+  deviceAuthReq = 1000;       // 设备认证请求(PC或APP终端->服务端)
+  deviceAuthResp = 1001;      // 设备认证响应(服务端->PC或APP终端)
+
+  // WebSocket
+  wsDeviceAuthReq = 2000;     // 设备认证请求(客服系统客户端->服务端)
+  wsDeviceAuthResp = 2001;    // 设备认证响应(服务端->客服系统客户端)
+}

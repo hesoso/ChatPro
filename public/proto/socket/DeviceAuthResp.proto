@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+package protobuf.socket;
+
+option java_outer_classname = "DeviceAuthRespProto";
+
+message DeviceAuthResp {
+  string token = 1;     // 授权令牌
+}

@@ -1,11 +1,17 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 
-const fileType = ref('img')
+defineProps({
+  fileData: {
+    type: File,
+    required: true
+  }
+})
+
 </script>
 
 <template>
-  <div v-if="fileType === 'img'" class="img-wrap">
+  <div v-if="fileData.type === 'img'" class="img-wrap">
     <el-image style="width: 100px; height: 100px" src="" fit="fit" />
   </div>
   <div v-else class="file-wrap">

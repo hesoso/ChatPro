@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package protobuf.socket;
+
+import "consts/EnumClient.proto";
+
+option java_outer_classname = "DeviceAuthReqProto";
+
+message DeviceAuthReq {
+  string userId = 1;                      // 用户ID(主账号)
+  string clientId = 2;                    // 客户端ID(绑定渠道标识)
+  protobuf.consts.EnumClient client = 3;  // 客户端类型
+}

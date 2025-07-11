@@ -1,0 +1,51 @@
+import http from '../utils/http.ts'
+import { UUID } from 'uuidjs'
+import moment from 'moment'
+import { ChatModePanel } from '../views/workbench/Chat/types/chat'
+
+interface loginUser {
+  mobile: string
+}
+interface UserDeviceForm {
+  keyword?: string
+}
+
+const commonParams = () => {
+  return {
+    timestamp: moment().format('YYYY-MM-DD HH:mm:ss'),
+    sign: UUID.generate(),
+  }
+}
+
+export const getUser = ({ mobile }: loginUser) => {
+  return http.post('/bee/user/getUser', {
+    method: 'getUser',
+    mobile: mobile,
+    ...commonParams()
+  })
+}
+
+export const getUserDevice = (data: UserDeviceForm) => {
+  return http.post('/bee/device/getUserDevice', {
+    method: 'getUserDevice',
+    keyword: data?.keyword,
+    ...commonParams()
+  })
+}
+
+
+export const getPanel = () => {
+  return http.post('/bee/panel/getPanel', {
+    method: 'getPanel',
+    ...commonParams()
+  })
+}
+
+
+export const changePanel = (params: ChatModePanel) => {
+  return http.post('/bee/panel/changePanel', {
+    method: 'changePanel',
+    ...params,
+    ...commonParams()
+  })
+}

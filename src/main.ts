@@ -1,8 +1,11 @@
 import { createApp } from 'vue'
 import { router } from './router'
 import store from './store'
-
+import ElementPlus from 'element-plus'
 import VueVirtualScroller from 'vue-virtual-scroller'
+
+import { initMessageSocket, wsDeviceAuthReq } from './websocket'
+import { useUserStore } from './store/user.ts'
 
 import App from './App.vue'
 import SvgIcon from './components/SvgIcon.vue'
@@ -10,8 +13,7 @@ import SvgIcon from './components/SvgIcon.vue'
 import 'virtual:svg-icons-register'
 import 'vue-virtual-scroller/dist/vue-virtual-scroller.css'
 import '@imengyu/vue3-context-menu/lib/vue3-context-menu.css'
-import 'element-plus/theme-chalk/src/message-box.scss'
-import 'element-plus/theme-chalk/src/message.scss'
+import 'element-plus/dist/index.css'
 
 const app = createApp(App)
 
@@ -19,10 +21,21 @@ app.component('SvgIcon', SvgIcon)
 app.use(store)
 app.use(router)
 app.use(VueVirtualScroller)
+app.use(ElementPlus)
 
-app.mount('#app').$nextTick(() => {
-  // Use contextBridge
-  window.ipcRenderer.on('main-process-message', (_event, message) => {
-    console.log(message)
-  })
-})
+const mountApp = async (app) => {
+  const userStore = useUserStore()
+  if (userStore.userInfo.host) {
+    await initMessageSocket(userStore.userInfo)
+    wsDeviceAuthReq(userStore.loginForm, () => {
+      app.mount('#app').$nextTick(async () => {
+        // Use contextBridge
+        window.ipcRenderer.on('main-process-message', (_event, message) => {
+          console.log(message)
+        })
+      })
+    })
+  }
+}
+
+await mountApp(app)

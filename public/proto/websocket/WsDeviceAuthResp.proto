@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+package protobuf.websocket;
+
+option java_outer_classname = "WsDeviceAuthRespProto";
+
+message WsDeviceAuthResp {
+  string token = 1;     // 授权令牌
+}

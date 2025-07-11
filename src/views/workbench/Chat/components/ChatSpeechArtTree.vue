@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { showContextMenu } from '@/components/ContextMenu'
-import { ElCheckbox } from 'element-plus'
+import { ElCheckbox, ElMessageBox } from 'element-plus'
 
 const props = defineProps({
   selectmode: Boolean
 })
+
+const emits = defineEmits(['edit'])
 
 interface Tree {
   label: string
@@ -18,11 +20,24 @@ function onContextMenu(e: MouseEvent) {
     menuList: [{
       label: '编辑话术',
       onClick: () => {
+        emits('edit')
       }
     }, {
       label: '删除话术',
       textType: 'danger',
       onClick: () => {
+        ElMessageBox.confirm(
+          '是否删该话术？',
+          '提示',
+          {
+            confirmButtonText: '确认',
+            cancelButtonText: '取消'
+          }
+        )
+          .then(() => {
+          })
+          .catch(() => {
+          })
       }
     }]
   })

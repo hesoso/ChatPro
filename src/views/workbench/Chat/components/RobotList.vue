@@ -1,39 +1,33 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-const robotList = ref([
-  {
-    id: Symbol(),
-    robotType: '',
-    robotName: '桦',
-  },
-  {
-    id: Symbol(),
-    robotType: '',
-    robotName: '小陈',
-  },
-  {
-    id: Symbol(),
-    robotType: '',
-    robotName: '机器人3',
-  }
-])
+import { ref, onMounted } from 'vue'
+import { getUserDevice } from '@/apis'
+import { RobotDeviceModel, EnumWechatType } from '../types/chat.d.ts'
 
-const curRobot = ref(robotList.value[0])
+const robotList = ref<RobotDeviceModel[]>([])
+const curRobot = ref<RobotDeviceModel>(robotList.value[0])
 
 
-const handleRobotChange = (robot) => {
+const handleRobotChange = (robot: RobotDeviceModel) => {
   curRobot.value = robot
 }
+
+onMounted(() => {
+  getUserDevice().then((res: HttpResponse<{deviceModelList: RobotDeviceModel[]}>) => {
+    robotList.value = res.data.deviceModelList
+    curRobot.value = res.data.deviceModelList[0]
+  })
+})
 </script>
 
 <template>
 <ul class="robot-list">
   <li v-for="item in robotList" :key="item.id" class="robot-item" :class="[{active: item.id === curRobot.id }]" @click="handleRobotChange(item)">
     <div class="avatar-wrap">
-      <img src="@/assets/images/weixin.png" alt="" class="avatar">
-      <img src="@/assets/images/qw_.png" alt="" class="avatar-icon">
+      <img :src="item.avatar" alt="" class="avatar">
+      <img v-if="item.wechatType === EnumWechatType.wework" src="@/assets/images/qw_.png" alt="" class="avatar-icon">
+      <img v-else src="@/assets/images/weixin.png" alt="" class="avatar-icon">
     </div>
-    <span>{{item.robotName}}</span>
+    <span>{{item.nickname}}</span>
   </li>
 </ul>
 </template>
@@ -66,6 +60,7 @@ const handleRobotChange = (robot) => {
         position: absolute;
         bottom: 0;
         right: 0;
+        border-radius: 50%;
       }
       .avatar {
         width: 34px;

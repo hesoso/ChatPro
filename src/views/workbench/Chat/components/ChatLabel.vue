@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ElMessageBox } from 'element-plus'
+import SearchInput from '@/components/SearchInput.vue'
 
 defineProps({
   modelValue: Boolean
@@ -76,7 +77,7 @@ const tableData: User[] = [
 
 const delHandler = () => {
   ElMessageBox.confirm(
-    '是否确认删除该共享码？',
+    '是否删除该标签？',
     '提示',
     {
       confirmButtonText: '确定',
@@ -93,15 +94,24 @@ const delHandler = () => {
 </script>
 
 <template>
-<el-dialog :model-value="modelValue" title="共享码" width="702" @update:modelValue="emits('update:modelValue')">
+<el-dialog :model-value="modelValue" title="编辑微信标签" width="638" @update:modelValue="emits('update:modelValue')">
+  <div style="margin: 20px 50px;height: 40px">
+    <SearchInput placeholder="请输入微信标签名称"></SearchInput>
+  </div>
+  <div class="layout-slide" style="margin: 20px 50px;">
+    <span class="link">新增微信标签</span>
+    <span class="link">批量设置微信标签</span>
+    <span class="link">批量取消微信标签</span>
+    <span class="link">批量删除微信标签</span>
+  </div>
   <div style="margin: 20px 50px;max-height: 400px">
     <el-table :data="tableData" border  height="350">
-      <el-table-column align="center" type="index" width="55" label="序号" />
-      <el-table-column align="center" label="共享码">
+      <el-table-column align="center" type="selection" width="55"  />
+      <el-table-column align="center" label="微信标签ID">
         <template #default="scope">5r6zy</template>
       </el-table-column>
-      <el-table-column align="center" property="name" label="创建时间">
-        <template #default="scope">2024-11-20 11:11:32</template>
+      <el-table-column align="center" property="name" label="微信标签名称">
+        <template #default="scope">重要</template>
       </el-table-column>
       <el-table-column align="center" property="address" label="操作">
         <template #default="scope"><span class="red" @click="delHandler">删除</span></template>

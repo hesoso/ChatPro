@@ -6,7 +6,7 @@ import 'vue3-emoji-picker/css'
 import ChatInputBarCollect from '@/views/workbench/Chat/components/ChatInputBarCollect.vue'
 import ChatInputBarGif from '@/views/workbench/Chat/components/ChatInputBarGif.vue'
 
-const emits = defineEmits(['emoji-select', 'collect-select', 'show-all-message'])
+const emits = defineEmits(['emoji-select', 'collect-select', 'show-all-message','file-select'])
 const optionsRefs = ref([])
 const showEmojiPopover = ref(false)
 const showCollectPopover = ref(false)
@@ -15,11 +15,16 @@ const showGifPopover = ref(false)
 const { files, open, reset, onChange } = useFileDialog(
   {
     multiple:true,//可选：是否可以多选文件
-    accept:".jpg,png",//可选：自定义上传文件类型
+    accept:".docx,.doc,.pdf,.xlx",//可选：自定义上传文件类型
     reset:true,//可选：再次选择时是否把之前选的文件清除
     capture:"user" //可选：调用设备媒体 camera camcorder microphone user(相机前置摄像头)
   }
 )
+
+onChange((fileList) => {
+  console.log(fileList)
+  emits('file-select',fileList && fileList[0])
+})
 
 const options = ref([{
   iconName: '表情'
@@ -60,7 +65,7 @@ function onSelectCollect (collect) {
 }
 
 const handleClick = (item) => {
-  item.onClick()
+  item?.onClick()
 }
 </script>
 

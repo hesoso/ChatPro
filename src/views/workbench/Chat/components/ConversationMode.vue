@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import SearchInput from '@/components/SearchInput.vue'
 import CreateNewConversation from '@/views/workbench/Chat/components/CreateNewConversation.vue'
-import { ConversationModeEnum } from '@/enums/conversation.ts'
 import { useConversationStore } from '@/store/useConversationStore.ts'
+import { changePanel, getPanel } from '@/apis'
+import { ChatModePanel, EnumConvoMode, EnumConvoModeNames, EnumFlag } from '@/views/workbench/Chat/types/chat.d.ts'
 
 const conversationStore = useConversationStore()
 
@@ -14,38 +15,60 @@ const handleCancel = () => {
   showSearch.value = false
 }
 
-const curGroupList = ref(['group1', 'group2', 'group3'])
-
 const modeList = ref([{
-  type: ConversationModeEnum.independent,
+  type: EnumConvoMode.single,
   name: '独立'
 }, {
-  type: ConversationModeEnum.combination,
+  type: EnumConvoMode.mix,
   name: '组合'
 }, {
-  type: ConversationModeEnum.reception,
+  type: EnumConvoMode.server,
   name: '接待'
 }])
 
-const groupList = ref([{
-  type: 'group1',
-  name: '好友'
-},{
-  type: 'group2',
-  name: '群'
-},{
-  type: 'group3',
-  name: '群成员'
-}])
+const extractMemberMsgFlag = ref(conversationStore.chatPanel.extractMemberMsgFlag)
 
-const curGroupListHanlder = (type: String) => {
-  const index = curGroupList.value.indexOf(type)
-  index > -1 ? curGroupList.value.splice(index, 1) : curGroupList.value.push(type)
+const modeText = computed(() => {
+  const convoModeName = EnumConvoModeNames[conversationStore.chatPanel.convoMode]
+  const groupNames = []
+  if (conversationStore.chatPanel.targetContactFlag === EnumFlag.YES) {
+    groupNames.push('好友')
+  }
+  if (conversationStore.chatPanel.targetRoomFlag === EnumFlag.YES) {
+    groupNames.push('群')
+  }
+  if (conversationStore.chatPanel.targetMemberFlag === EnumFlag.YES) {
+    groupNames.push('群成员')
+  }
+  let text = convoModeName
+  if (groupNames.length > 0) {
+    text += `[${groupNames.join('+')}]`
+  }
+  return text
+})
+
+
+const handleChangeMode = (type: EnumConvoMode) => {
+  conversationStore.setConversationMode(type)
+  changePanel({convoMode: conversationStore.chatPanel.convoMode})
 }
 
-const handleChangeMode = (item) => {
-  conversationStore.setConversationMode(item.type)
+const extractMemberMsgFlagChange = (flag: EnumFlag) => {
+  conversationStore.setExtractMemberMsgFlag(flag)
+  changePanel({extractMemberMsgFlag: conversationStore.chatPanel.extractMemberMsgFlag})
 }
+
+const handleChangeGroup = (field: string) => {
+  const val = conversationStore.chatPanel[field] === EnumFlag.YES ? EnumFlag.NO : EnumFlag.YES
+  conversationStore.setTargetFlag(field, val)
+  changePanel({[field]: val})
+}
+
+onMounted(() => {
+  getPanel().then((res: HttpResponse<ChatModePanel>) => {
+    handleChangeMode(res.data.convoMode)
+  })
+})
 
 </script>
 
@@ -62,21 +85,36 @@ const handleChangeMode = (item) => {
             <div class="mode-section">
               <p class="title">会话模式</p>
               <div class="radio-wrap">
-                <span v-for="item in modeList" class="radio-item" :class="[{active: conversationStore.conversationMode === item.type}]"
-                      @click="handleChangeMode(item)">{{ item.name }}</span>
+                <span v-for="item in modeList" class="radio-item" :class="[{active: conversationStore.chatPanel.convoMode === item.type}]"
+                      @click="handleChangeMode(item.type)">{{ item.name }}</span>
               </div>
             </div>
             <div class="mode-section">
-              <p class="title">组合消息</p>
+              <div class="title layout-lc">
+                <p>组合消息</p>
+                <el-switch
+                  size="small"
+                  style="margin-left: 10px"
+                  v-model="extractMemberMsgFlag"
+                  :active-value="EnumFlag.YES"
+                  :inactive-value="EnumFlag.NO"
+                  @change="extractMemberMsgFlagChange"
+                >
+                </el-switch>
+              </div>
               <div class="radio-wrap">
-                <span v-for="item in groupList" class="radio-item" :class="[{active: curGroupList.includes(item.type)}]"
-                      @click="curGroupListHanlder(item.type)">{{ item.name }}</span>
+                <span  class="radio-item" :class="[{active: conversationStore.chatPanel.targetContactFlag === EnumFlag.YES}]"
+                         @click="handleChangeGroup('targetContactFlag')">好友</span>
+                <span  class="radio-item" :class="[{active: conversationStore.chatPanel.targetRoomFlag === EnumFlag.YES}]"
+                       @click="handleChangeGroup('targetRoomFlag')">群</span>
+                <span v-if="extractMemberMsgFlag === EnumFlag.YES"  class="radio-item" :class="[{active: conversationStore.chatPanel.targetMemberFlag === EnumFlag.YES}]"
+                      @click="handleChangeGroup('targetMemberFlag')">群成员</span>
               </div>
             </div>
           </div>
           <template #reference>
             <div class="mode-wrap">
-              <span style="margin-right: 27px">独立[好友+群+群成员]</span>
+              <span style="margin-right: 27px">{{modeText}}</span>
               <svg-icon style="font-size: 20px" name="down-blue"></svg-icon>
             </div>
           </template>
@@ -154,8 +192,6 @@ const handleChangeMode = (item) => {
     .radio-wrap {
       display: flex;
       align-items: center;
-      justify-content: space-between;
-
     }
   }
 }
@@ -164,6 +200,7 @@ const handleChangeMode = (item) => {
   width: 46px;
   height: 20px;
   display: flex;
+  margin-right: 20px;
   align-items: center;
   justify-content: center;
   font-weight: 400;
@@ -175,6 +212,9 @@ const handleChangeMode = (item) => {
   &.active {
     background: #3686FF;
     color: #fff;
+  }
+  &:last-child {
+    margin-right: 0;
   }
 }
 </style>

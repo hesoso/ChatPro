@@ -3,6 +3,11 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router';
 import { useBridge } from '../hooks/useBridge.ts'
 import PhoneCode from '@/components/PhoneCode.vue'
+import { getUser } from '@/apis'
+import { initMessageSocket, wsDeviceAuthReq } from '@/websocket'
+import { useUserStore } from '@/store/user.ts'
+
+const userStore = useUserStore()
 
 const bridgeHandlers = useBridge()
 const router = useRouter()
@@ -13,6 +18,7 @@ enum FORM_TYPE {
   FORGOT_PASSWORD = 'forgot-password',
 }
 
+const ruleForm = ref<any>(null)
 const successFlag = ref(false)
 const loginLoading = ref(false)
 const showProvision = ref(false)
@@ -20,8 +26,8 @@ const agreement = ref(false)
 const formType = ref(FORM_TYPE.LOGIN)
 
 const loginForm = ref({
-  name: '',
-  pass: ''
+  username: '',
+  password: '',
 })
 
 const checkName = async (rule, value, callback) => {
@@ -30,12 +36,31 @@ const checkName = async (rule, value, callback) => {
   }
 }
 
+const checkPass = async (rule, value, callback) => {
+  if (!value) {
+    return callback(new Error('密码不能为空'))
+  }
+}
+
 const rules = ref({
-  name: [{ validator: checkName, trigger: 'blur' }]
+  username: [{ validator: checkName, trigger: 'blur' }],
+  password: [{ validator: checkPass, trigger: 'blur' }]
 })
 
 const submitForm = () => {
-  router.push('/workbench/chat')
+  ruleForm.value.validate((valid: boolean) => {
+    if (valid) {
+      getUser({mobile: loginForm.value.username}).then(async (res: HttpResponse<UserInfo>) => {
+        userStore.SET_LOGINFORM(loginForm.value)
+        userStore.SET_USERINFO(res.data)
+
+        await initMessageSocket(res.data)
+        wsDeviceAuthReq(loginForm.value, () => {
+          router.push('/workbench/chat')
+        })
+      })
+    }
+  })
 }
 
 const toLogin = () => {
@@ -74,9 +99,9 @@ const closeElectron = () => {
           <h1>欢迎使用客服系统</h1>
           <el-form ref="ruleForm" :model="loginForm" :rules="rules" :size="'large'" status-icon>
             <!-- 用户名 -->
-            <el-form-item prop="name">
+            <el-form-item prop="username">
               <el-input
-                v-model.trim="loginForm.name"
+                v-model.trim="loginForm.username"
                 clearable
                 maxlength="30"
                 placeholder="请输入你的手机号"
@@ -84,9 +109,9 @@ const closeElectron = () => {
               ></el-input>
             </el-form-item>
             <!-- 密码 -->
-            <el-form-item prop="pass">
+            <el-form-item prop="password">
               <el-input
-                v-model.trim="loginForm.pass"
+                v-model.trim="loginForm.password"
                 autocomplete="off"
                 placeholder="请输入密码"
                 maxlength="30"
@@ -127,9 +152,9 @@ const closeElectron = () => {
           <h1>注册</h1>
           <el-form ref="ruleForm" :model="loginForm" :rules="rules" :size="'large'" status-icon>
             <!-- 用户名 -->
-            <el-form-item prop="name">
+            <el-form-item prop="username">
               <el-input
-                v-model.trim="loginForm.name"
+                v-model.trim="loginForm.username"
                 clearable
                 maxlength="30"
                 placeholder="请输入你的手机号"
@@ -137,10 +162,10 @@ const closeElectron = () => {
               ></el-input>
             </el-form-item>
             <!-- 发送验证码 -->
-            <el-form-item prop="pass">
+            <el-form-item prop="password">
               <div class="layout-qz">
                 <el-input
-                  v-model.trim="loginForm.pass"
+                  v-model.trim="loginForm.password"
                   autocomplete="off"
                   placeholder="请输入验证码"
                   maxlength="30"
@@ -272,7 +297,7 @@ const closeElectron = () => {
           <header>服务条款
             <svg-icon
               class="top-right-icon no-drag-area"
-              style="font-size: 30px;color: #999999"
+              style="font-size: 15px;color: #999999"
               name="close"
               @click="showProvision = false"></svg-icon>
           </header>
