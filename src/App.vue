@@ -1,13 +1,13 @@
 <script setup lang="ts">
 
 window.databaseApi.onMessage({
-        "wechatId": '1008611',
+        "wechatId": '1008612111',
         "chatType": '1',
         "draft": '213',
         "sender": "7881302256961285",
         "receiver": "10737336402983720",
         "senderNickname": "那年十八",
-        "msgId": "6038979939951729151",
+        "msgId": "60389799399517291521112",
         "msgTime": 1751506557,
         "room": true,
         "contentType": 3,
@@ -16,7 +16,7 @@ window.databaseApi.onMessage({
 )
 
 const messages = await window.databaseApi.getMessages({
-        "wechatId": '1008611',
+        "wechatId": '1008612111',
         "convoId": '7881302256961285',
         "chatType": '1',
         options: {

@@ -540,7 +540,6 @@ const regsiterDatabaseHandler = () => {
         params.chatType,
         params.options
       );
-      console.log("===========================messages===========================", messages);
       return { success: true, data: FieldConverter.convertResultSet(messages) };
     } catch (error) {
       console.error("IPC Error - DB:GET_MESSAGES:", error);
@@ -553,8 +552,7 @@ const regsiterDatabaseHandler = () => {
         params.wechatId,
         params.options
       );
-      console.log("===========================messages===========================", sessions);
-      return { success: true, data: sessions };
+      return { success: true, data: FieldConverter.convertResultSet(sessions) };
     } catch (error) {
       console.error("IPC Error - DB:GET_SESSIONS:", error);
       return { success: false, error: error.message || "Failed to query chat data" };
