@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package protobuf.websocket;
+
+option java_outer_classname = "WsDeviceAuthReqProto";
+
+message WsDeviceAuthReq {
+  string username = 1;  // 登录用户名(绑定渠道标识)
+  string password = 2;  // 登录密码
+}

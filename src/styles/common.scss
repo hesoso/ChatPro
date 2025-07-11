@@ -4,6 +4,11 @@
   --mx-menu-hover-backgroud: #E3EBFF !important;
   --mx-menu-placeholder-width: 7px !important;
   --w-e-textarea-bg-color: transparent !important;
+  --el-color-primary: #3686FF !important;
+  --el-color-danger: #F54A45 !important;
+  --el-component-size-large: 50px !important;
+  --el-component-size: 32px !important;
+  --el-component-size-small: 24px !important;
 }
 
 .drag-area {
@@ -355,8 +360,9 @@
   }
 }
 .el-dialog {
-  padding: 0;
+  padding: 0 !important;
   border-radius: 15px !important;
+  margin: 0 !important;
 }
 .el-dialog__header {
   padding: 12px 20px;

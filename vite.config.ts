@@ -2,9 +2,6 @@ import { defineConfig } from 'vite'
 import path from 'node:path'
 import electron from 'vite-plugin-electron/simple'
 import vue from '@vitejs/plugin-vue'
-import AutoImport from 'unplugin-auto-import/vite'
-import Components from 'unplugin-vue-components/vite'
-import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
 import { createSvgIconsPlugin } from 'vite-plugin-svg-icons'
 
 // https://vitejs.dev/config/
@@ -40,16 +37,6 @@ export default defineConfig({
             undefined
           : {}
     }),
-    AutoImport({
-      resolvers: [ElementPlusResolver()]
-    }),
-    Components({
-      resolvers: [
-        ElementPlusResolver({
-          importStyle: 'sass'
-        })
-      ]
-    }),
     createSvgIconsPlugin({
       iconDirs: [path.resolve(process.cwd(), 'src/assets/icons/svg')], // icon存放的目录
       symbolId: 'icon-[name]'
@@ -66,7 +53,6 @@ export default defineConfig({
         api: 'modern-compiler', // 或 "modern"，"legacy"
         importers: [],
         additionalData: `
-       @use "@/styles/element/index.scss" as *;
        @use "@/styles/var.scss" as *;
         `
       }

@@ -16,7 +16,7 @@ const editorDefaultConfig = ref({
   autoFocus: false
 })
 
-const fileData = ref(null)
+const fileData = ref<null|File>(null)
 
 const handleEmojiSelect = (emoji: EmojiExt) => {
   editorRef.value?.focus()
@@ -24,7 +24,11 @@ const handleEmojiSelect = (emoji: EmojiExt) => {
 }
 
 const handleCollectSelect = (collect) => {
-  fileData.value = collect
+  fileData.value = {type: 'img'}
+}
+
+const handleFileSelect = (file: File) => {
+  fileData.value = file
 }
 
 const handleEditorCreated = (editor) => {
@@ -52,11 +56,18 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <ChatInputBar @emoji-select="handleEmojiSelect" @collect-select="handleCollectSelect" @show-all-message="emits('show-all-message')"></ChatInputBar>
+  <ChatInputBar
+    @emoji-select="handleEmojiSelect"
+    @collect-select="handleCollectSelect"
+    @file-select="handleFileSelect"
+    @show-all-message="emits('show-all-message')"
+  >
+
+  </ChatInputBar>
   <div v-if="fileData" class="layout-cc">
-   <div class="layout-zy" style="height: 100px">
-     <FilePreview></FilePreview>
-   </div>
+    <div class="layout-zy" style="height: 100px">
+      <FilePreview :fileData="fileData"></FilePreview>
+    </div>
     <div style="margin-top: 20px">
       <el-button @click="handleCancelSendFile">取消</el-button>
       <el-button type="primary" @click="handleSendFile">发送</el-button>

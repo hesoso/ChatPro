@@ -2,9 +2,11 @@
 import { ref } from 'vue'
 import InputEdit from '@/components/InputEdit.vue'
 import SvgIcon from '@/components/SvgIcon.vue'
+import ChatLabel from '@/views/workbench/Chat/components/ChatLabel.vue'
 
 const switchValue = ref(false)
 const switchValue1 = ref(false)
+const showChatLabel = ref(false)
 
 </script>
 
@@ -47,7 +49,7 @@ const switchValue1 = ref(false)
       <div class="detail-row">
         <span class="detail-row-label">微信标签</span>
         <div class="detail-row-end">
-          <svg-icon name="edit"></svg-icon>
+          <svg-icon name="edit" @click="showChatLabel = true"></svg-icon>
         </div>
       </div>
       <div class="detail-row">
@@ -72,6 +74,7 @@ const switchValue1 = ref(false)
       </div>
     </div>
   </div>
+  <ChatLabel v-if="showChatLabel" v-model="showChatLabel"></ChatLabel>
 </template>
 
 <style scoped lang="scss">

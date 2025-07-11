@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+package protobuf.common;
+
+option java_outer_classname = "MsgSendRespProto";
+
+message MsgSendResp {
+  string msgId = 1;     // 消息ID
+}

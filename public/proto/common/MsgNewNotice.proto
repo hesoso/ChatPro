@@ -1,0 +1,95 @@
+syntax = "proto3";
+
+package protobuf.common;
+
+import "google/protobuf/any.proto";
+import "consts/EnumContentType.proto";
+
+option java_outer_classname = "MsgNewNoticeProto";
+
+message MsgNewNotice {
+  string guid = 1;                                  // 实例ID
+  string wechatId = 2;                              // 微信ID
+  string sender = 3;                                // 发送人(微信ID|群成员微信ID)
+  string receiver = 4;                              // 接收人(微信ID|群ID|模拟群成员微信ID)
+  string senderNickname = 5;                        // 发送人昵称
+  string senderAvatar = 6;                          // 发送人头像
+  string receiverNickname = 7;                      // 接收人昵称(微信昵称|群昵称|模拟群成员微信昵称)
+  string receiverAvatar = 8;                        // 接收人头像(微信头像|群头像|模拟群成员微信头像)
+  string sourceRoomNickname = 9;                    // 来源群昵称
+  string sourceRoomAvatar = 10;                     // 来源群头像
+  string msgId = 11;                                // 消息ID
+  int64 msgTime = 12;                               // 消息时间戳(s)
+  bool room = 13;                                   // 群消息(true|false)
+  protobuf.consts.EnumContentType contentType = 14; // 消息类型
+  google.protobuf.Any content = 15;                 // 消息内容
+}
+
+message SysNotice {
+  // TODO
+}
+
+message RevokeNotice {
+  // TODO
+}
+
+message ReadNotice {
+
+}
+
+message TextNotice {
+  string content = 1;   // 文本消息内容
+  string refMsgId = 2;  // 引用消息ID
+}
+
+message EmojiNotice {
+
+}
+
+message ImageNotice {
+
+}
+
+message VoiceNotice {
+
+}
+
+message VideoNotice {
+
+}
+
+message WeappNotice {
+
+}
+
+message SphNotice {
+
+}
+
+message LuckymoneyNotice {
+
+}
+
+message LinkNotice {
+
+}
+
+message NamecardNotice {
+
+}
+
+message FileNotice {
+
+}
+
+message QuoteNotice {
+
+}
+
+message ForwardNotice {
+
+}
+
+message TransferNotice {
+
+}

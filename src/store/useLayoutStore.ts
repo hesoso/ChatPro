@@ -7,7 +7,7 @@ export const useLayoutStore = defineStore('layout', {
   actions: {
     toggleSpeechArtPanel() {
       this.speechArtPanelShow = !this.speechArtPanelShow
-    },
-    persist: true
-  }
+    }
+  },
+  persist: true
 })

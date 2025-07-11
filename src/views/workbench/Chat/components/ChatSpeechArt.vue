@@ -37,7 +37,7 @@ const showSharedCodeImport = ref(false)
       </el-dropdown>
     </div>
     <div class="tree-wrap">
-      <ChatSpeechArtTree></ChatSpeechArtTree>
+      <ChatSpeechArtTree @edit="showChatSpeechArtNew = true"></ChatSpeechArtTree>
     </div>
   </div>
   <!-- 新增话术分组 -->

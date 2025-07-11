@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package protobuf;
+
+import "google/protobuf/any.proto";
+import "consts/EnumNoticeType.proto";
+
+option java_outer_classname = "MsgProto";
+
+message Msg {
+  string id = 1;                                  // 消息ID
+  string refId = 2;                               // 引用消息ID
+  string token = 3;                               // 通信令牌
+  protobuf.consts.EnumNoticeType noticeType = 4;  // 通知类型
+  google.protobuf.Any data = 5;                   // 数据报文
+}

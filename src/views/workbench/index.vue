@@ -3,12 +3,14 @@ import { useRoute, useRouter } from 'vue-router';
 import { useBridge } from '../../hooks/useBridge.ts'
 import { computed } from 'vue'
 import { useLayoutStore } from '@/store/useLayoutStore.ts'
+import { useUserStore } from '@/store/user.ts'
 
 const layoutStore = useLayoutStore()
+const userStore = useUserStore()
 const bridgeHandlers = useBridge()
+
 const route = useRoute()
 const router = useRouter()
-
 
 const navList = computed(() => {
   return [{
@@ -42,8 +44,9 @@ const navHandler = (item: NavItem) => {
 <div class="workbench-container">
   <header class="layout-qz drag-area">
     <div class="icon-wrap layout-qz">
-      <svg-icon class="chat-icon" name="chat"></svg-icon>
-      <span>账号IDxxxxxxxxx</span>
+      <img v-if="userStore.userInfo.avatar" class="avatar" :src="userStore.userInfo.avatar" alt="">
+      <svg-icon v-else class="chat-icon" name="chat"></svg-icon>
+      <span>账号ID:{{ userStore.userInfo.userId }}</span>
     </div>
     <div class="options-wrap layout-qz no-drag-area">
       <svg-icon name="settings"></svg-icon>
@@ -92,6 +95,9 @@ const navHandler = (item: NavItem) => {
       .chat-icon {
         font-size: 20px;
         margin-right: 8px;
+      }
+      .avatar {
+        width: 20px;
       }
     }
     .options-wrap {
