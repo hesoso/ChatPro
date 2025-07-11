@@ -21,12 +21,18 @@ declare namespace NodeJS {
   }
 }
 
+interface I_DB_API_RESPONSE<T> {
+  data: T
+  success: boolean
+}
+
 // Used in Renderer process, expose in `preload.ts`
 interface Window {
   ipcRenderer: import('electron').IpcRenderer
-  db: {
-    addMessage: <T>(args: T) => boolean
-    fetchChatData: <T>(args: T) => []
+  databaseApi: {
+    onMessage: (args: I_OnMessageParams) => void
+    getMessages: (args: I_GetMessagesParams) => I_DB_API_RESPONSE<[]>
+    getSessions: (args: I_GetSessionsParams) => I_DB_API_RESPONSE<[]>
   }
   bridge: {
     toggleDevTool: () => void,

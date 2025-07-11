@@ -1,94 +1,227 @@
-import { getDB } from "../db";
+import Database from 'better-sqlite3';
 
-export interface NewMessage {
-    session_id: string;
-    sender_id_ref?: string | null; // 可以是机器人等非用户ID
-    receiver_id_ref?: string | null; // 可以是群ID
-    message_type?: string;
-    content: string;
-    is_from_me?: boolean;
-    quote_message_id?: number | null;
-    raw_data?: string | null;
-    // timestamp 将在 addMessage 内部生成
-    // status 默认为 'sent'
-}
+export default class MessageManager {
+  constructor(private db: Database.Database) { }
 
-export interface Message extends NewMessage {
-    id: number;
-    timestamp: number; // Unix 毫秒时间戳
-    status: string;
-}
-
-// ---- 数据库操作函数 ----
-
-/**
- * 添加一条新的聊天消息。
- * @param messageData - 消息数据，不包含 id 和 timestamp (timestamp 会自动生成)。
- * @returns 插入消息的 id 和 timestamp。
- * @throws 如果插入失败，则抛出错误。
- */
-export function addMessage(messageData: NewMessage): { id: number; timestamp: number } {
-    const dbInstance = getDB();
-    const timestamp = Date.now(); // 生成当前时间的 Unix 毫秒时间戳
-    const sql = `
-        INSERT INTO messages (
-            session_id, sender_id_ref, receiver_id_ref, message_type, 
-            content, timestamp, is_from_me, quote_message_id, raw_data
-        )
-        VALUES (
-            @session_id, @sender_id_ref, @receiver_id_ref, @message_type, 
-            @content, @timestamp, @is_from_me, @quote_message_id, @raw_data
-        );
-    `;
-
+  // 插入单条消息
+  insertMessage(msg: any): boolean {
     try {
-        const stmt = dbInstance.prepare(sql);
-        const result = stmt.run({
-            ...messageData,
-            message_type: messageData.message_type || 'text', // 默认消息类型
-            is_from_me: messageData.is_from_me === undefined ? 0 : (messageData.is_from_me ? 1 : 0),
-            timestamp, // 使用我们生成的 Unix 毫秒时间戳
-        });
-        return { id: Number(result.lastInsertRowid), timestamp };
+      // 检查消息是否已存在
+      if (this.messageExists(msg.wechatId, msg.chatType, msg.msgId)) {
+        console.log(`消息已存在: ${msg.msgId}`);
+        return false;
+      }
+
+      const stmt = this.db.prepare(
+        `INSERT INTO T_BEE_CHAT_MSG (
+          WECHAT_ID, CHAT_TYPE, SENDER, SENDER_AVATAR, SENDER_NICKNAME,
+          RECEIVER, RECEIVER_AVATAR, RECEIVER_NICKNAME, MSG_ID, CONTENT_TYPE,
+          CONTENT, SEND_FLAG, CREATE_TIME, UPDATE_TIME, QUOTE_MSG_ID
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      );
+
+      stmt.run(
+        msg.wechatId,
+        msg.chatType,
+        msg.sender,
+        msg.senderAvatar,
+        msg.senderNickname,
+        msg.receiver,
+        msg.receiverAvatar,
+        msg.receiverNickname,
+        msg.msgId,
+        msg.contentType,
+        msg.content,
+        msg.wechatId === msg.sender ? '1' : '0',
+        Date.now(),
+        Date.now(),
+        msg.quoteMsgId || ''
+      );
+
+      return true;
     } catch (error) {
-        console.error('Failed to add message:', error);
-        throw error; // 或者返回一个更友好的错误对象
+      console.error('插入消息失败:', error);
+      return false;
     }
-}
+  }
 
-/**
- * 根据会话ID获取消息列表，支持分页。
- * @param sessionId - 会话ID。
- * @param limit - 获取的消息数量，默认为 50。
- * @param offset - 偏移量，用于分页，默认为 0。
- * @param orderByTimestamp - 排序方式，'ASC' (升序，旧消息在前) 或 'DESC' (降序，新消息在前)，默认为 'DESC'。
- * @returns 消息数组。
- */
-export function getMessagesBySessionId(
-    sessionId: string,
-    limit: number = 50,
-    offset: number = 0,
-    orderByTimestamp: 'ASC' | 'DESC' = 'DESC'
-): Message[] {
-    const dbInstance = getDB();
-    const sql = `
-        SELECT id, session_id, sender_id_ref, receiver_id_ref, message_type, 
-               content, timestamp, status, is_from_me, quote_message_id, raw_data
-        FROM messages
-        WHERE session_id = @sessionId
-        ORDER BY timestamp ${orderByTimestamp === 'ASC' ? 'ASC' : 'DESC'} -- 防止SQL注入，显式检查值
-        LIMIT @limit OFFSET @offset;
-    `;
+  // 批量插入消息（事务处理）
+  insertMessages(messages: any[]): number {
+    const insertStmt = this.db.prepare(
+      `INSERT OR IGNORE INTO T_BEE_CHAT_MSG (
+        WECHAT_ID, CHAT_TYPE, SENDER, SENDER_AVATAR, SENDER_NICKNAME,
+        RECEIVER, RECEIVER_AVATAR, RECEIVER_NICKNAME, MSG_ID, CONTENT_TYPE,
+        CONTENT, SEND_FLAG, CREATE_TIME, UPDATE_TIME, QUOTE_MSG_ID
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+    );
 
+    const insertMany = this.db.transaction((msgs: any[]) => {
+      let count = 0;
+      for (const msg of msgs) {
+        // 检查消息是否已存在
+        if (this.messageExists(msg.wechatId, msg.chatType, msg.msgId)) {
+          console.log(`消息已存在: ${msg.msgId}`);
+          break
+        }
+        try {
+          insertStmt.run(
+            msg.wechatId,
+            msg.chatType,
+            msg.sender,
+            msg.senderAvatar,
+            msg.senderNickname,
+            msg.receiver,
+            msg.receiverAvatar,
+            msg.receiverNickname,
+            msg.msgId,
+            msg.contentType,
+            msg.content,
+            msg.sendFlag,
+            Date.now(),
+            Date.now(),
+            msg.quoteMsgId || ''
+          );
+          count++;
+        } catch (error) {
+          console.error(`插入消息 ${msg.msgId} 失败:`, error);
+        }
+      }
+      return count;
+    });
+
+    return insertMany(messages);
+  }
+
+  // 检查消息是否存在
+  messageExists(wechatId: string, chatType: string, msgId: string): boolean {
+    const stmt = this.db.prepare(
+      `SELECT 1 FROM T_BEE_CHAT_MSG 
+       WHERE WECHAT_ID = ? AND CHAT_TYPE = ? AND MSG_ID = ? LIMIT 1`
+    );
+    return !!stmt.get(wechatId, chatType, msgId);
+  }
+
+  // 删除单条消息
+  deleteMessage(wechatId: string, chatType: string, msgId: string): boolean {
     try {
-        const stmt = dbInstance.prepare(sql);
-        const messages = stmt.all({ sessionId, limit, offset }) as Message[];
-        return messages.map(msg => ({
-            ...msg,
-            is_from_me: Boolean(msg.is_from_me) // 将 0/1 转换为 boolean
-        }));
+      const stmt = this.db.prepare(
+        `DELETE FROM T_BEE_CHAT_MSG 
+         WHERE WECHAT_ID = ? AND CHAT_TYPE = ? AND MSG_ID = ?`
+      );
+
+      const result = stmt.run(wechatId, chatType, msgId);
+      return result.changes > 0;
     } catch (error) {
-        console.error(`Failed to get messages for session ${sessionId}:`, error);
-        return []; // 或者抛出错误
+      console.error('删除消息失败:', error);
+      return false;
     }
+  }
+
+  // 根据会话删除消息
+  deleteMessagesBySession(wechatId: string, convoId: string, chatType: string): number {
+    try {
+      // 根据会话类型确定删除条件
+      let condition = '';
+      if (chatType === '1') {
+        // 私聊：sender或receiver等于会话ID
+        condition = `(SENDER = ? OR RECEIVER = ?)`;
+      } else if (chatType === '2') {
+        // 群聊：receiver等于群ID
+        condition = `RECEIVER = ?`;
+      } else {
+        throw new Error(`不支持的聊天类型: ${chatType}`);
+      }
+
+      const stmt = this.db.prepare(
+        `DELETE FROM T_BEE_CHAT_MSG 
+         WHERE WECHAT_ID = ? AND CHAT_TYPE = ? AND ${condition}`
+      );
+
+      const params = chatType === '1'
+        ? [wechatId, chatType, convoId, convoId]
+        : [wechatId, chatType, convoId];
+
+      const result = stmt.run(...params);
+      return result.changes;
+    } catch (error) {
+      console.error('删除会话消息失败:', error);
+      return 0;
+    }
+  }
+
+  // 获取消息列表（按会话和时间范围）
+  getMessages(
+    wechatId: string,
+    convoId: string,
+    chatType: string,
+    options: {
+      limit?: number;
+      offset?: number;
+      beforeTime?: number;
+      afterTime?: number;
+    } = {}
+  ): any[] {
+    try {
+      // 基础条件
+      let conditions = [
+        'WECHAT_ID = ?',
+        'CHAT_TYPE = ?'
+      ];
+
+      const params: any[] = [wechatId, chatType];
+
+      // 根据会话类型添加条件
+      if (chatType === '1') {
+        // 私聊：sender或receiver等于会话ID
+        conditions.push('(SENDER = ? OR RECEIVER = ?)');
+        params.push(convoId, convoId);
+      } else if (chatType === '2') {
+        // 群聊：receiver等于群ID
+        conditions.push('RECEIVER = ?');
+        params.push(convoId);
+      } else {
+        throw new Error(`不支持的聊天类型: ${chatType}`);
+      }
+
+      // 时间范围条件
+      if (options.beforeTime) {
+        conditions.push('CREATE_TIME < ?');
+        params.push(options.beforeTime);
+      }
+
+      if (options.afterTime) {
+        conditions.push('CREATE_TIME > ?');
+        params.push(options.afterTime);
+      }
+
+      // 构建查询
+      let query = `SELECT * FROM T_BEE_CHAT_MSG WHERE ${conditions.join(' AND ')} 
+                   ORDER BY CREATE_TIME DESC`;
+
+      // 分页处理
+      if (options.limit) {
+        query += ` LIMIT ${options.limit}`;
+        if (options.offset) {
+          query += ` OFFSET ${options.offset}`;
+        }
+      }
+
+      const stmt = this.db.prepare(query);
+      return stmt.all(...params);
+    } catch (error) {
+      console.error('获取消息列表失败:', error);
+      return [];
+    }
+  }
+
+  // 获取最近一条消息
+  getLastMessage(wechatId: string, convoId: string, chatType: string): any | null {
+    try {
+      const messages = this.getMessages(wechatId, convoId, chatType, { limit: 1 });
+      return messages.length > 0 ? messages[0] : null;
+    } catch (error) {
+      console.error('获取最后一条消息失败:', error);
+      return null;
+    }
+  }
 }

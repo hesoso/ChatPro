@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package protobuf.common;
+
+option java_outer_classname = "DeviceAuthRespProto";
+
+message DeviceAuthResp {
+  string msgId = 1;     // 消息ID
+  string newMsgId = 2;  // 新消息ID
+}

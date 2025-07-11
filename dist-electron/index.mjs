@@ -1,30 +1,30 @@
 "use strict";
 const electron = require("electron");
 var DB_EVENTS = /* @__PURE__ */ ((DB_EVENTS2) => {
-  DB_EVENTS2["AddMessage"] = "db:add-message";
-  DB_EVENTS2["GetMessages"] = "db:get-messages";
-  DB_EVENTS2["GetChatData"] = "db:query-chat-data";
+  DB_EVENTS2["ON_MESSAGE"] = "DB:ON_MESSAGE";
+  DB_EVENTS2["GET_MESSAGES"] = "DB:GET_MESSAGES";
+  DB_EVENTS2["GET_SESSIONS"] = "DB:GET_SESSIONS";
   return DB_EVENTS2;
 })(DB_EVENTS || {});
-electron.contextBridge.exposeInMainWorld("db", {
+electron.contextBridge.exposeInMainWorld("databaseApi", {
   /**
-   * 根据 wxid (作为 sessionId) 查询聊天数据。
-   * @param params - 包含 wxid 和可选分页参数的对象。
-   * @returns Promise，解析为包含 success 和 data/error 的对象。
+   * 新的聊天消息
+   * @param params - 见 I_OnMessageParams 类型定义
+   * @returns Promise
    */
-  fetchChatData: (params) => electron.ipcRenderer.invoke(DB_EVENTS.GetChatData, params),
+  onMessage: (params) => electron.ipcRenderer.invoke(DB_EVENTS.ON_MESSAGE, params),
   /**
-   * 添加一条新的聊天消息。
-   * @param messageData - 消息数据。
-   * @returns Promise，解析为包含 success 和 data (包含 id 和 timestamp) / error 的对象。
+   * 根据会话ID获取消息列表
+   * @param params - 见 I_GetMessagesParams 类型定义
+   * @returns Promise
    */
-  addMessage: (messageData) => electron.ipcRenderer.invoke(DB_EVENTS.AddMessage, messageData),
+  getMessages: (params) => electron.ipcRenderer.invoke(DB_EVENTS.GET_MESSAGES, params),
   /**
-   * 根据会话ID获取消息列表。
-   * @param params - 包含 sessionId 和可选分页参数的对象。
-   * @returns Promise，解析为包含 success 和 data (消息数组) / error 的对象。
+   * 查询会话列表
+   * @param params - 见 I_GetSessionsParams 类型定义
+   * @returns Promise
    */
-  getMessages: (params) => electron.ipcRenderer.invoke(DB_EVENTS.GetMessages, params)
+  getSessions: (params) => electron.ipcRenderer.invoke(DB_EVENTS.GET_SESSIONS, params)
 });
 electron.contextBridge.exposeInMainWorld("bridge", {
   toggleDevTool: () => {

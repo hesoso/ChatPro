@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Protobuf 编码解码演示</title>
+    <script src="proto/protobuf.min.js"></script>
+  </head>
+  <body>
+    <h2>Protobuf 编码/解码演示</h2>
+    <pre id="result"></pre>
+    <label for="sendCount">每轮并发数：</label>
+    <input
+      type="number"
+      id="sendCount"
+      value="1"
+      min="1"
+      style="width: 120px"
+    />
+    <button id="sendBtn">发送</button>
+    <button id="stopBtn" style="display:none;">停止</button>
+    <script>
+      window.onload = function () {
+        protobuf.load(
+          ['proto/websocket/WsDeviceAuthReq.proto', 'proto/Msg.proto'],
+          function (err, root) {
+            if (err) {
+              document.getElementById('result').textContent =
+                'Proto 加载失败: ' + err
+              return
+            }
+            // const wsUrl = 'ws://192.168.1.9:13003/ws'
+            const wsUrl = 'ws://192.168.1.26:13003/ws'
+            // 获取类型
+            const Any = root.lookupType('google.protobuf.Any')
+            const WsDeviceAuthReq = root.lookupType(
+              'protobuf.websocket.WsDeviceAuthReq'
+            )
+            const Msg = root.lookupType('protobuf.Msg')
+
+            // 1. 构造业务数据
+            const payload = {
+              tenantId: 'tenant-123',
+              username: 'user123',
+              password: 'password123',
+            }
+            // 2. 编码业务数据
+            const payloadBuffer = WsDeviceAuthReq.encode(payload).finish()
+
+            // 3. 用Any封装业务数据
+            const anyPayload = {
+              type_url:
+                'type.googleapis.com/protobuf.websocket.WsDeviceAuthReq',
+              value: payloadBuffer,
+            }
+
+            // 4. 构造 Msg
+            const msgPayload = {
+              id: 'msg-001',
+              refId: '1111',
+              token: 'token123',
+              noticeType: 2000,
+              data: anyPayload,
+            }
+            const msgBuffer = Msg.encode(msgPayload).finish()
+
+            // WebSocket 连接到服务器
+            const socket = new WebSocket(wsUrl)
+            socket.binaryType = 'arraybuffer'
+
+            // 当 WebSocket 连接成功时发送消息
+            socket.onopen = function () {
+              console.log('WebSocket 连接已建立！')
+            }
+
+            // 发送按钮事件
+            let isRunning = false;
+            document.getElementById('sendBtn').onclick = function () {
+              if (isRunning) return;
+              isRunning = true;
+              document.getElementById('sendBtn').style.display = 'none';
+              document.getElementById('stopBtn').style.display = 'inline';
+              
+              function sendBatch() {
+                if (!isRunning) return;
+                const num = document.getElementById('sendCount').value
+                Promise.all(
+                  Array.from({ length: num }, () => {
+                    return new Promise((resolve) => {
+                      setTimeout(() => {
+                        socket.send(msgBuffer);
+                        resolve();
+                      }, 0);
+                    });
+                  })
+                ).then(() => {
+                  console.log('已并发发送 ' + num + ' 次！');
+                  // 无限循环
+                  setTimeout(sendBatch, 0);
+                }).catch((error) => {
+                  console.error('发送过程中出错:', error);
+                  isRunning = false;
+                });
+              }
+              
+              sendBatch();
+            }
+            
+            // 停止按钮事件
+            document.getElementById('stopBtn').onclick = function () {
+              isRunning = false;
+              document.getElementById('sendBtn').style.display = 'inline';
+              document.getElementById('stopBtn').style.display = 'none';
+              console.log('已停止发送');
+            }
+
+            // 当接收到消息时，打印消息内容
+            socket.onmessage = function (event) {
+              console.log('接收到消息：', event)
+              decodeWsResp(event.data)
+            }
+
+            function decodeWsResp(res) {
+              const buffer = new Uint8Array(res)
+              const decodedMsg = Msg.decode(buffer)
+              console.log('解码后的 Msg:', decodedMsg)
+              const decodedAny = decodedMsg.data
+              //  解码业务数据
+              let decodedPayload = null
+              if (
+                decodedAny.type_url ===
+                'type.googleapis.com/protobuf.websocket.WsDeviceAuthResp'
+              ) {
+                decodedPayload = WsDeviceAuthReq.decode(decodedAny.value)
+                console.log('解码后的业务数据:', decodedPayload)
+              } else {
+                console.log('type_url 不匹配，无法解码业务数据')
+              }
+            }
+
+            // 当 WebSocket 连接关闭时
+            socket.onclose = function () {
+              console.log('WebSocket 连接已关闭')
+            }
+
+            // 当发生错误时
+            socket.onerror = function (error) {
+              console.error('WebSocket 错误:', error)
+            }
+
+            // // 解码 Msg
+            // const decodedMsg = Msg.decode(msgBuffer)
+            // console.log('decodedMsg:', decodedMsg)
+            // const decodedAny = decodedMsg.data
+            // console.log('decodedAny:', decodedAny)
+            // result +=
+            //   '解码后的 Msg 对象:\n' +
+            //   JSON.stringify(decodedMsg, null, 2) +
+            //   '\n\n'
+
+            // //  解码 Msg.data (Any)
+            // result +=
+            //   '解码后的 Msg.data (Any):\n' +
+            //   JSON.stringify(decodedAny, null, 2) +
+            //   '\n\n'
+
+            // // 解码业务数据
+            // let decodedPayload = null
+            // if (
+            //   decodedAny.type_url ===
+            //   'type.googleapis.com/protobuf.websocket.WsDeviceAuthReq'
+            // ) {
+            //   decodedPayload = WsDeviceAuthReq.decode(decodedAny.value)
+            //   result +=
+            //     '解码后的 WsDeviceAuthReq 对象:\n' +
+            //     JSON.stringify(decodedPayload, null, 2)
+            //   console.log('decodedPayload:', decodedPayload)
+            // } else {
+            //   result += 'type_url 不匹配，无法解码业务数据'
+            // }
+          }
+        )
+      }
+    </script>
+  </body>
+</html>

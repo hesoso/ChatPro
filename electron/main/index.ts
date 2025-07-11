@@ -5,6 +5,7 @@ import path from 'node:path'
 
 
 import { initializeDatabase, getDB } from '../database/index'
+import { regsiterBaseHandler } from './register.base'
 import { regsiterDatabaseHandler } from './register.database'
 import { registerBridgeHandler } from './register.bridge.handler'
 
@@ -39,7 +40,7 @@ function createWindow() {
     // maximizable: false, // 禁止最大化
     // autoHideMenuBar:true,// 是否隐藏菜单栏
     // titleBarStyle:'hidden',// 窗口标题栏的样式
-    // backgroundColor: '#b2b2b2', // 窗口的背景颜色为十六进制值
+    // backgroundColor: '#EFF0F4', // 窗口的背景颜色为十六进制值
     webPreferences: {
       preload: path.join(__dirname, 'index.mjs'),
       // nodeIntegration: true, // 控制是否在渲染进程中启用Node.js集成，为true时，渲染进程可使用Node.js的API
@@ -87,17 +88,12 @@ app.whenReady().then(() => {
   initializeDatabase()
   // 创建窗口
   createWindow()
+  // 注册基础处理事件
+  regsiterBaseHandler()
   // 注册数据库处理事件
   regsiterDatabaseHandler()
   // 注册桥方法
   registerBridgeHandler()
-  // 安装vuedevtool
-  const devToolsPath = path.join(
-      __dirname,
-      '../devtools/vue-devtool'
-  )
-  win?.webContents.session.loadExtension(devToolsPath).then((ex) => {
-    console.log(ex)
-    // win?.webContents.openDevTools()
-  })
+  // 打开调试工具
+  win?.webContents.openDevTools()
 })
