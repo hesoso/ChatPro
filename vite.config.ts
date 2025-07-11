@@ -53,7 +53,6 @@ export default defineConfig({
         api: 'modern-compiler', // 或 "modern"，"legacy"
         importers: [],
         additionalData: `
-       @use "@/styles/element/index.scss" as *;
        @use "@/styles/var.scss" as *;
         `
       }

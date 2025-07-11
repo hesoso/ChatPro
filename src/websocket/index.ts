@@ -1,8 +1,9 @@
 import { initProtobuf } from '../protobuf'
-import { ProtoBufferType } from '../enums/protobuf.ts'
+import { NoticeType, ProtoBufferType } from '../enums/protobuf.ts'
 import { deviceAuthReqForm } from '../types/User'
 import { ElMessage } from 'element-plus'
 import { useUserStore } from '../store/user.ts'
+import { useConversationStore } from '../store/useConversationStore.ts'
 
 let megSocket: MessageSocket
 
@@ -54,7 +55,7 @@ class MessageSocket {
   decodeWsResp(data: any) {
     const res = this.MessageBuffer.decodeBuffer(data)
     // 收到鉴权成功的请求
-    if (res.data.type_url === ProtoBufferType.WsDeviceAuthResp) {
+    if (res.noticeType === NoticeType.wsDeviceAuthResp) {
       console.log('鉴权成功', res)
       const userStore = useUserStore()
       userStore.SET_TOKEN(res.data.value.token)
@@ -62,7 +63,26 @@ class MessageSocket {
         fn(res)
       })
       this.deviceAuthCallback.length = 0
-    } else if (res.data.type_url === ProtoBufferType.Error) {
+    } else if (res.noticeType === NoticeType.msgNewNotice) {
+      debugger
+      const conversationStore = useConversationStore()
+      const message = {
+        "wechatId": '',
+        "chatType": '1',
+        "draft": '',
+        "extractMemberMsgFlag": conversationStore.chatPanel.extractMemberMsgFlag,
+        "sender": res.data.value.sender,
+        "receiver": res.data.value.receiver,
+        "senderNickname": res.data.value.senderNickname,
+        "msgId": res.data.value.msgId,
+        "msgTime": res.data.value.msgTime,
+        "room": res.data.value.room,
+        "contentType": res.data.value.contentType,
+        "content": res.data.value.content.value.content
+      }
+      console.log('存储消息', message)
+      window.databaseApi.onMessage(message)
+    } else if (res.noticeType === NoticeType.error) {
       ElMessage.error(res.data.value.memo)
     }
   }

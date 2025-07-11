@@ -27,7 +27,10 @@ onChange((fileList) => {
 })
 
 const options = ref([{
-  iconName: '表情'
+  iconName: '表情',
+  onClick: () => {
+    showEmojiPopover.value = true
+  }
 }, {
   iconName: '收藏'
 }, {
@@ -65,7 +68,7 @@ function onSelectCollect (collect) {
 }
 
 const handleClick = (item) => {
-  item?.onClick()
+  item.onClick && item.onClick()
 }
 </script>
 
@@ -77,6 +80,7 @@ const handleClick = (item) => {
   </div>
   <!-- emoji弹窗 -->
   <el-popover
+    v-if="showEmojiPopover"
     popper-class="emoji-popover"
     ref="popoverRef"
     v-model:visible="showEmojiPopover"

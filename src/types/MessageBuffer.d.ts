@@ -2,7 +2,7 @@ interface Msg<T = any> {
   id: string
   refId: string
   token: string
-  noticeType: string
+  noticeType: number
   data: AnyData<T>
 }
 

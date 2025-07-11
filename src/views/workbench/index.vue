@@ -8,9 +8,9 @@ import { useUserStore } from '@/store/user.ts'
 const layoutStore = useLayoutStore()
 const userStore = useUserStore()
 const bridgeHandlers = useBridge()
+
 const route = useRoute()
 const router = useRouter()
-
 
 const navList = computed(() => {
   return [{
