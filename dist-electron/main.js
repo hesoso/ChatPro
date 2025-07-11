@@ -1,3 +1,6 @@
+var __defProp = Object.defineProperty;
+var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
+var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
 import { app, ipcMain, BrowserWindow, screen } from "electron";
 import { fileURLToPath } from "node:url";
 import path$1 from "node:path";
@@ -438,6 +441,69 @@ var DB_EVENTS = /* @__PURE__ */ ((DB_EVENTS2) => {
   DB_EVENTS2["GET_SESSIONS"] = "DB:GET_SESSIONS";
   return DB_EVENTS2;
 })(DB_EVENTS || {});
+const _FieldConverter = class _FieldConverter {
+  /**
+   * 蛇形命名转换为驼峰命名
+   * @param str 蛇形命名字符串
+   * @returns 驼峰命名字符串
+   */
+  static snakeToCamel(str) {
+    if (str === str.toUpperCase()) {
+      return str.toLowerCase().replace(/(_\w)/g, (m) => m[1].toUpperCase());
+    }
+    return str.replace(/([a-z])([A-Z])/g, "$1_$2").toLowerCase().replace(/(?:_)(\w)/g, (_, c) => c.toUpperCase()).replace(/^_/, "");
+  }
+  /**
+   * 获取字段映射关系
+   * @param keys 原始字段名数组
+   * @returns 字段映射对象 {原字段名: 驼峰字段名}
+   */
+  static getFieldMap(keys) {
+    const cacheKey = keys.sort().join(",");
+    if (!_FieldConverter.fieldMapCache.has(cacheKey)) {
+      const map = {};
+      keys.forEach((key) => {
+        map[key] = _FieldConverter.snakeToCamel(key);
+      });
+      _FieldConverter.fieldMapCache.set(cacheKey, map);
+    }
+    return _FieldConverter.fieldMapCache.get(cacheKey);
+  }
+  /**
+   * 转换单行数据
+   * @param row 原始数据行
+   * @param fieldMap 字段映射对象
+   * @returns 转换后的数据行
+   */
+  static convertRow(row, fieldMap) {
+    if (_FieldConverter.rowCache.has(row)) {
+      return _FieldConverter.rowCache.get(row);
+    }
+    const map = fieldMap || _FieldConverter.getFieldMap(Object.keys(row));
+    const newRow = {};
+    for (const key in row) {
+      if (Object.prototype.hasOwnProperty.call(row, key)) {
+        const newKey = map[key] || key;
+        newRow[newKey] = row[key];
+      }
+    }
+    _FieldConverter.rowCache.set(row, newRow);
+    return newRow;
+  }
+  /**
+   * 转换整个结果集
+   * @param rows 原始数据数组
+   * @returns 转换后的数据数组
+   */
+  static convertResultSet(rows) {
+    if (rows.length === 0) return [];
+    const fieldMap = _FieldConverter.getFieldMap(Object.keys(rows[0]));
+    return rows.map((row) => _FieldConverter.convertRow(row, fieldMap));
+  }
+};
+__publicField(_FieldConverter, "fieldMapCache", /* @__PURE__ */ new Map());
+__publicField(_FieldConverter, "rowCache", /* @__PURE__ */ new WeakMap());
+let FieldConverter = _FieldConverter;
 const regsiterDatabaseHandler = () => {
   ipcMain.handle(DB_EVENTS.ON_MESSAGE, async (_event, msg) => {
     const db2 = getDB();
@@ -475,7 +541,7 @@ const regsiterDatabaseHandler = () => {
         params.options
       );
       console.log("===========================messages===========================", messages);
-      return { success: true, data: messages };
+      return { success: true, data: FieldConverter.convertResultSet(messages) };
     } catch (error) {
       console.error("IPC Error - DB:GET_MESSAGES:", error);
       return { success: false, error: error.message || "Failed to get messages" };

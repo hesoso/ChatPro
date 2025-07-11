@@ -28,7 +28,7 @@ interface I_GetMessagesParams {
     wechatId: string
     convoId: string
     chatType: T_Chat
-    options: {
+    options?: {
         limit?: number
         offset?: number
         beforeTime?: number
@@ -38,7 +38,7 @@ interface I_GetMessagesParams {
 
 interface I_GetSessionsParams {
     wechatId: string
-    options: {
+    options?: {
         limit?: number
         offset?: number
         search?: string
