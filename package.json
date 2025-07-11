@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc && vite build && electron-builder",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "postinstall": "./node_modules/.bin/electron-rebuild"
   },
   "dependencies": {
     "@imengyu/vue3-context-menu": "^1.5.0",
