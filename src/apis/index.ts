@@ -25,7 +25,7 @@ export const getUser = ({ mobile }: loginUser) => {
   })
 }
 
-export const getUserDevice = (data: UserDeviceForm) => {
+export const getUserDevice = <T = unknown>(data: UserDeviceForm): Promise<HttpResponse<T>> => {
   return http.post('/bee/device/getUserDevice', {
     method: 'getUserDevice',
     keyword: data?.keyword,
@@ -34,12 +34,13 @@ export const getUserDevice = (data: UserDeviceForm) => {
 }
 
 
-export const getPanel = () => {
+
+export const getPanel = (): Promise<HttpResponse<ChatModePanel>> => {
   return http.post('/bee/panel/getPanel', {
     method: 'getPanel',
     ...commonParams()
-  })
-}
+  });
+};
 
 
 export const changePanel = (params: ChatModePanel) => {

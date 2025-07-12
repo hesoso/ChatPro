@@ -9,12 +9,16 @@ export enum EnumConvoMode {
   server = '3'
 }
 
-export enum EnumConvoModeNames {
-  '1' = '独立',
-  '2' = '组合',
-  '3' = '接待'
+// export enum EnumConvoModeNames {
+//   '1' = '独立',
+//   '2' = '组合',
+//   '3' = '接待'
+// }
+export const EnumConvoModeToNames = {
+  [EnumConvoMode.single]: '独立',
+  [EnumConvoMode.mix]: '组合',
+  [EnumConvoMode.server]: '接待'
 }
-
 export enum EnumFlag {
   YES = '1',
   NO = '0'
@@ -44,3 +48,8 @@ export interface ChatModePanel {
   targetRoomFlag?: EnumFlag,  //目标群标识(1:聚合或接待联系人,0:否)
   targetMemberFlag?: EnumFlag, //目标群成员标识(提取群成员消息标识开启后生效)(1:聚合或接待联系人,0:否)
 }
+
+// 
+export type ChatPanelKeyS = keyof ChatModePanel
+// 剔除 convoMode
+export type ChatPanelEnumFlagKeys = Exclude<ChatPanelKeyS, 'convoMode'>

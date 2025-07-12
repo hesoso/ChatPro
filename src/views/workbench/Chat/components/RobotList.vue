@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { getUserDevice } from '@/apis'
-import { RobotDeviceModel, EnumWechatType } from '../types/chat.d.ts'
+import { RobotDeviceModel, EnumWechatType } from '../types/chat.ts'
 
 const robotList = ref<RobotDeviceModel[]>([])
 const curRobot = ref<RobotDeviceModel>(robotList.value[0])
@@ -12,7 +12,7 @@ const handleRobotChange = (robot: RobotDeviceModel) => {
 }
 
 onMounted(() => {
-  getUserDevice().then((res: HttpResponse<{deviceModelList: RobotDeviceModel[]}>) => {
+  getUserDevice<{deviceModelList: RobotDeviceModel[]}>({}).then((res) => {
     robotList.value = res.data.deviceModelList
     curRobot.value = res.data.deviceModelList[0]
   })
