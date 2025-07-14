@@ -12,7 +12,7 @@ import OtherSettings from '@/views/workbench/Settings/OtherSettings.vue'
 
 const routes = [
   { path: '/', redirect: '/login' },
-  { path: '/login', component: Login, name: 'name' },
+  { path: '/login', component: Login, name: 'Login' },
   {
     path: '/workbench',
     component: Workbench,
@@ -66,4 +66,9 @@ const routes = [
 export const router = createRouter({
   history: createWebHashHistory(),
   routes
+})
+
+router.afterEach((to, from) => {
+  console.log(to, from, 'afterEach')
+  localStorage.setItem('lastPath', to.path)
 })

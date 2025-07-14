@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref } from 'vue'
+//@ts-ignore
 import { Editor } from '@wangeditor/editor-for-vue'
 import ChatInputBar from '@/views/workbench/Chat/components/ChatInputBar.vue'
 import ChatInputEnter from '@/views/workbench/Chat/components/ChatInputEnter.vue'
@@ -9,7 +10,7 @@ import FilePreview from '@/components/FilePreview.vue'
 
 const emits = defineEmits(['show-all-message'])
 
-const editorRef = ref(undefined)
+const editorRef = ref<Editor | null>(null)
 const valueHtml = ref('')
 const editorWidth = ref(0)
 const editorDefaultConfig = ref({
@@ -23,7 +24,11 @@ const handleEmojiSelect = (emoji: EmojiExt) => {
   editorRef.value?.insertText(emoji.i)
 }
 
-const handleCollectSelect = (collect) => {
+const editorFocus = () => {
+  editorRef.value?.focus()
+}
+const handleCollectSelect = (collect: number) => {
+  // @ts-ignore
   fileData.value = {type: 'img'}
 }
 
@@ -31,7 +36,7 @@ const handleFileSelect = (file: File) => {
   fileData.value = file
 }
 
-const handleEditorCreated = (editor) => {
+const handleEditorCreated = (editor: Editor) => {
   editorRef.value = editor
 }
 
@@ -45,8 +50,12 @@ const handleSendFile = () => {
 
 
 onMounted(() => {
-  const el = document.querySelector('#editor-container')
-  editorWidth.value = el?.offsetWidth
+  const el = document.querySelector('#editor-container') as HTMLElement
+  editorWidth.value = el.offsetWidth
+
+  nextTick(() => {
+    editorFocus()
+  })
 })
 
 onUnmounted(() => {
@@ -77,6 +86,7 @@ onUnmounted(() => {
     <div class="edit-content" id="editor-container">
       <Editor
         v-model="valueHtml"
+        ref="editor"
         style="height: 100%; overflow-y: auto;"
         :style="{ width: editorWidth + 'px' }"
         mode="simple"

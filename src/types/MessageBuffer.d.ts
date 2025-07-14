@@ -16,6 +16,6 @@ interface WsDeviceAuthResp {
 }
 
 interface MessageBuffer {
-  getWsDeviceAuthBuffer(playLoad: deviceAuthReqForm): Buffer
+  getWsDeviceAuthBuffer(playLoad: IDeviceAuthReqForm): Buffer
   decodeBuffer(data: Msg): Msg
 }

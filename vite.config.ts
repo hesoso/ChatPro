@@ -3,11 +3,24 @@ import path from 'node:path'
 import electron from 'vite-plugin-electron/simple'
 import vue from '@vitejs/plugin-vue'
 import { createSvgIconsPlugin } from 'vite-plugin-svg-icons'
+import { codeInspectorPlugin } from 'code-inspector-plugin'
+import AutoImport from 'unplugin-auto-import/vite'
 
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
     vue(),
+    AutoImport({
+      // 目标自动导入的模块
+      imports: ['vue', 'vue-router', 'pinia', '@vueuse/core'],
+      // 指定额外需要自动导入的模块
+      dirs: [],
+      // 生成自动导入的声明文件，方便类型推断
+      dts: './auto-imports.d.ts',
+    }),
+    codeInspectorPlugin({
+      bundler: 'vite',
+    }),
     electron({
       main: {
         entry: 'electron/main/index.ts',

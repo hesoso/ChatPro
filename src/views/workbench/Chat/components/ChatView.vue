@@ -12,15 +12,28 @@ const props = defineProps({
 const emits = defineEmits(['transmit'])
 
 
-const messageList = ref(new Array(20000).fill(0))
+const messageList = ref(new Array(20000).fill(0).map((_, index) => ({
+    id: index,
+    type: 1,
+    content: `${index}`,
+    status: index % 2 === 0 ? 'success' : 'fail',
+    isSelf: index % 2 === 0,
+    time: '2023-05-05 12:00:00',
+    avatar: 'https://picsum.photos/200/300',
+    nickname: '张三',
+    conversationId: '1234567890',
+})))
 
-const scroller = ref<HTMLElement>(document.body)
-
-nextTick(() => {
+const scroller = useTemplateRef<{scrollToBottom: () => void}>('scroller')
+onMounted(() => {
+  console.log(scroller.value, 'scroller') 
+  nextTick(() => {
   if (props.mode !== 'history') {
-    scroller.value.scrollToBottom()
+    scroller.value && scroller.value.scrollToBottom()
   }
 })
+})
+
 </script>
 
 <template>
@@ -44,7 +57,7 @@ nextTick(() => {
         ]"
           :data-index="index"
         >
-          <MessageItem :index="index" @transmit="emits('transmit')"></MessageItem>
+          <MessageItem :message="item" :index="index" @transmit="emits('transmit')"></MessageItem>
         </DynamicScrollerItem>
       </template>
     </DynamicScroller>

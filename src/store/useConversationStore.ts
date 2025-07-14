@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ConversationModeEnum, ConversationStatusEnum } from '../enums/conversation.ts'
-import { EnumConvoMode, EnumFlag, ChatModePanel, ChatPanelEnumFlagKeys } from '../views/workbench/Chat/types/chat.ts'
+import { EnumConvoMode, EnumFlag, ChatModePanel, ChatPanelEnumFlagKeys } from '../views/workbench/Chat/types/chat'
 export const useConversationStore = defineStore<string, {
   chatPanel: ChatModePanel
   conversationMode: EnumConvoMode
@@ -51,7 +51,7 @@ export const useConversationStore = defineStore<string, {
   persist: {
     key: 'conversationStore', // 自定义存储键名
     storage: localStorage, // 使用 sessionStorage 而非 localStorage
-    pick: ['conversationMode'], // 指定需要持久化的字段
+    pick: ['conversationMode', 'chatPanel'], // 指定需要持久化的字段
   },
 })
 

@@ -1,7 +1,24 @@
 <script setup lang="ts">
 import { onMounted } from 'vue'
+import emitter from './utils/mitt'
+import { useRoute, useRouter } from 'vue-router'
 
+const router = useRouter()
+const route = useRoute()
 onMounted(async () => {
+  emitter.on('routeLogin', (event) => {
+    // 如果已经在登录页面，则不处理
+    if (route.name === 'Login') return
+    const redirect = event?.redirect
+    console.log('routeLogin', redirect)
+    router.push({
+      name: 'Login',
+      query: {
+        redirect
+      }
+    })
+
+  })
   window.databaseApi.onMessage({
       "wechatId": '1008611',
       "chatType": '1',

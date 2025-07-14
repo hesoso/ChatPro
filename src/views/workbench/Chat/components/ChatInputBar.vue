@@ -11,7 +11,10 @@ const optionsRefs = ref([])
 const showEmojiPopover = ref(false)
 const showCollectPopover = ref(false)
 const showGifPopover = ref(false)
-
+interface IOptionItem {
+  iconName: string,
+  onClick?: () => void
+}
 const { files, open, reset, onChange } = useFileDialog(
   {
     multiple:true,//可选：是否可以多选文件
@@ -26,7 +29,7 @@ onChange((fileList) => {
   emits('file-select',fileList && fileList[0])
 })
 
-const options = ref([{
+const options = ref<IOptionItem[]>([{
   iconName: '表情',
   onClick: () => {
     showEmojiPopover.value = true
@@ -61,13 +64,13 @@ function onSelectEmoji(emoji: EmojiExt) {
     }
     */
 }
-function onSelectCollect (collect) {
+function onSelectCollect (collect: number) {
   emits('collect-select', collect)
   showCollectPopover.value = false
   showGifPopover.value = false
 }
 
-const handleClick = (item) => {
+const handleClick = (item: IOptionItem) => {
   item.onClick && item.onClick()
 }
 </script>

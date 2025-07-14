@@ -4,13 +4,12 @@ import { showContextMenu } from '@/components/ContextMenu'
 import { useConversationStore } from '@/store/useConversationStore.ts'
 import { ElMessage } from 'element-plus'
 import  { MessageContent } from '../utils/messageContentRender.ts'
+import { CpMessage } from '../types/message.ts'
 
-const props = defineProps({
-  index: {
-    type: Number,
-    required: true
-  }
-})
+const props = defineProps<{
+  index: number,
+  message: CpMessage
+}>()
 const emits = defineEmits(['transmit'])
 
 const conversationStore = useConversationStore()
@@ -33,7 +32,8 @@ function onContextMenuMessage(e: MouseEvent) {
           message: '复制',
           showClose: true
         })
-      }
+      },
+      textType: ''
     }, {
       label: '复制消息',
       onClick: () => {
@@ -41,17 +41,20 @@ function onContextMenuMessage(e: MouseEvent) {
           message: '复制消息',
           showClose: true
         })
-      }
+      },
+      textType: ''
     }, {
       label: '多选',
       onClick: () => {
         conversationStore.setMultipleMessageStatus(true)
-      }
+      },
+      textType: ''
     }, {
       label: '转发',
       onClick: () => {
         emits('transmit')
-      }
+      },
+      textType: ''
     }
     ]
   })
@@ -66,15 +69,18 @@ function onContextMenuAvatar(e: MouseEvent) {
       label: '@',
       onClick: () => {
         conversationStore.setAt(true)
-      }
+      },
+      textType: ''
     }, {
       label: '屏蔽',
       onClick: () => {
-      }
+      },
+      textType: ''
     }, {
       label: '踢出',
       onClick: () => {
-      }
+      },
+      textType: ''
     }]
   })
 }
@@ -84,15 +90,15 @@ function onContextMenuAvatar(e: MouseEvent) {
 <template>
   <div class="message-item-wrap">
     <el-checkbox v-if="conversationStore.multipleMessageStatus" class="checkbox"></el-checkbox>
-    <div class="message-item" :class="[{'from-me': fromMe}]">
+    <div class="message-item" :class="[{'from-me': message.isSelf}]">
       <div class="avatar-wrap" @contextmenu="onContextMenuAvatar">
-        <img src="" alt="">
+        <img :src="message.avatar" alt="">
       </div>
       <div class="message-content" @contextmenu="onContextMenuMessage">
         <div class="title-wrap">
-          <span class="title">小七</span>
+          <span class="title">{{ message.nickname }}</span>
         </div>
-        <MessageContent :messageData="{messageData: {}}" />
+        <MessageContent :messageData="message" />
       </div>
       <div class="status-wrap">
         <svg-icon name="error"></svg-icon>

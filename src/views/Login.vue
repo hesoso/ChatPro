@@ -6,6 +6,7 @@ import PhoneCode from '@/components/PhoneCode.vue'
 import { getUser } from '@/apis'
 import { initMessageSocket, wsDeviceAuthReq } from '@/websocket'
 import { useUserStore } from '@/store/user.ts'
+import { ElMessage } from 'element-plus'
 
 const userStore = useUserStore()
 
@@ -24,33 +25,65 @@ const loginLoading = ref(false)
 const showProvision = ref(false)
 const agreement = ref(false)
 const formType = ref(FORM_TYPE.LOGIN)
+const shaking = ref(false);
 
 const loginForm = ref({
   username: '',
   password: '',
+  captcha: ''
 })
 
-const checkName = async (rule, value, callback) => {
+const checkName = async (_: any, value: any, callback: any) => {
   if (!value) {
     return callback(new Error('用户名不能为空'))
   }
 }
 
-const checkPass = async (rule, value, callback) => {
+const checkPass = async (_: any, value: any, callback: any) => {
   if (!value) {
     return callback(new Error('密码不能为空'))
   }
 }
 
 const rules = ref({
-  username: [{ validator: checkName, trigger: 'blur' }],
-  password: [{ validator: checkPass, trigger: 'blur' }]
+  username: [{ validator: checkName, trigger: 'change' }],
+  password: [{ validator: checkPass, trigger: 'change' }]
 })
-
+// reset loginForm
+const resetLoginForm = () => {
+  loginForm.value = {
+    username: '',
+    captcha: '',
+    password: ''
+  }
+}
+// 切换提交类型
+const changeFormType = (type: FORM_TYPE) => {
+  formType.value = type
+  resetLoginForm()
+}
+// 登录
+const login = () => { 
+  if (!agreement.value) {
+    ElMessage.error('请阅读并同意协议条款')
+    shaking.value = true;
+    setTimeout(() => shaking.value = false, 500);
+    return
+  }
+  submitForm()
+}
+// 注册
+const register = () => {
+  submitForm()
+}
+// 找回密码
+const forget = () => {
+  submitForm()
+}
 const submitForm = () => {
   ruleForm.value.validate((valid: boolean) => {
     if (valid) {
-      getUser({mobile: loginForm.value.username}).then(async (res: HttpResponse<UserInfo>) => {
+      getUser({mobile: loginForm.value.username}).then(async (res) => {
         userStore.SET_LOGINFORM(loginForm.value)
         userStore.SET_USERINFO(res.data)
 
@@ -78,7 +111,6 @@ const closeElectron = () => {
 </script>
 
 <template>
-
   <div class="login-page drag-area">
     <div class="electron-menu">
       <svg-icon class="icon-btn no-drag-area" style="margin-right: 10px" name="min" @click="minimizeWindow"></svg-icon>
@@ -97,7 +129,7 @@ const closeElectron = () => {
         <!-- 登录表单 -->
         <template v-if="formType === FORM_TYPE.LOGIN">
           <h1>欢迎使用客服系统</h1>
-          <el-form ref="ruleForm" :model="loginForm" :rules="rules" :size="'large'" status-icon>
+          <el-form ref="ruleForm" :model="loginForm" :rules="rules" :size="'large'" status-icon @submit.nati.passive="login">
             <!-- 用户名 -->
             <el-form-item prop="username">
               <el-input
@@ -117,10 +149,11 @@ const closeElectron = () => {
                 maxlength="30"
                 class="no-drag-area"
                 show-password
+                @keyup.enter="login"
               >
               </el-input>
             </el-form-item>
-            <div class="underline no-drag-area" @click="formType = FORM_TYPE.FORGOT_PASSWORD">忘记密码</div>
+            <div class="underline no-drag-area" @click="changeFormType(FORM_TYPE.FORGOT_PASSWORD)">忘记密码</div>
           </el-form>
           <div class="login_btn_box">
             <el-button
@@ -129,7 +162,7 @@ const closeElectron = () => {
               :loading="loginLoading"
               :disabled="loginLoading"
               class="login-btn no-drag-area"
-              @click="submitForm"
+              @click="login"
             >
               登 录
             </el-button>
@@ -141,7 +174,7 @@ const closeElectron = () => {
               :loading="loginLoading"
               :disabled="loginLoading"
               class="rg-btn login-btn no-drag-area"
-              @click="formType = FORM_TYPE.REGISTER"
+              @click="changeFormType(FORM_TYPE.REGISTER)"
             >
               暂无账号，前往注册
             </el-button>
@@ -150,7 +183,7 @@ const closeElectron = () => {
         <!-- 注册表单 -->
         <template v-else-if="formType === FORM_TYPE.REGISTER">
           <h1>注册</h1>
-          <el-form ref="ruleForm" :model="loginForm" :rules="rules" :size="'large'" status-icon>
+          <el-form ref="ruleForm" :model="loginForm" :rules="rules" :size="'large'" status-icon @submit.prevent="register">
             <!-- 用户名 -->
             <el-form-item prop="username">
               <el-input
@@ -165,28 +198,28 @@ const closeElectron = () => {
             <el-form-item prop="password">
               <div class="layout-qz">
                 <el-input
-                  v-model.trim="loginForm.password"
+                  v-model.trim="loginForm.captcha"
                   autocomplete="off"
                   placeholder="请输入验证码"
                   maxlength="30"
                   class="no-drag-area"
-                  show-password
                 >
                 </el-input>
                 <div style="margin-left: 20px">
-                  <PhoneCode phone="18888888888"></PhoneCode>
+                  <PhoneCode :phone="loginForm.username"></PhoneCode>
                 </div>
               </div>
             </el-form-item>
             <!-- 密码 -->
-            <el-form-item prop="pass" style="margin-bottom: 0">
+            <el-form-item prop="password" style="margin-bottom: 0">
               <el-input
-                v-model.trim="loginForm.pass"
+                v-model.trim="loginForm.password"
                 autocomplete="off"
                 placeholder="请输入密码"
                 maxlength="30"
                 class="no-drag-area"
                 show-password
+                @keyup.enter="register"
               >
               </el-input>
             </el-form-item>
@@ -198,9 +231,9 @@ const closeElectron = () => {
               :loading="loginLoading"
               :disabled="loginLoading"
               class="login-btn no-drag-area"
-              @click="submitForm"
+              @click="register"
             >
-              登 录
+              注册
             </el-button>
           </div>
           <div class="login_btn_box">
@@ -210,7 +243,7 @@ const closeElectron = () => {
               :loading="loginLoading"
               :disabled="loginLoading"
               class="rg-btn login-btn no-drag-area"
-              @click="formType = FORM_TYPE.LOGIN"
+              @click="changeFormType(FORM_TYPE.LOGIN)"
             >
               已有账号，前往登录
             </el-button>
@@ -219,11 +252,11 @@ const closeElectron = () => {
         <!-- 重置密码 -->
         <template v-else-if="formType === FORM_TYPE.FORGOT_PASSWORD">
           <h1>重置密码</h1>
-          <el-form ref="ruleForm" :model="loginForm" :rules="rules" :size="'large'" status-icon>
+          <el-form ref="ruleForm" :model="loginForm" :rules="rules" :size="'large'" status-icon @submit.native.prevent="forget">
             <!-- 用户名 -->
-            <el-form-item prop="name">
+            <el-form-item prop="username">
               <el-input
-                v-model.trim="loginForm.name"
+                v-model.trim="loginForm.username"
                 clearable
                 maxlength="30"
                 placeholder="请输入你的手机号"
@@ -231,31 +264,31 @@ const closeElectron = () => {
               ></el-input>
             </el-form-item>
             <!-- 发送验证码 -->
-            <el-form-item prop="pass">
+            <el-form-item prop="captcha">
               <div class="layout-qz">
                 <el-input
-                  v-model.trim="loginForm.pass"
+                  v-model.trim="loginForm.captcha"
                   autocomplete="off"
                   placeholder="请输入验证码"
                   maxlength="30"
                   class="no-drag-area"
-                  show-password
                 >
                 </el-input>
                 <div style="margin-left: 20px">
-                  <PhoneCode phone="18888888888"></PhoneCode>
+                  <PhoneCode :phone="loginForm.username"></PhoneCode>
                 </div>
               </div>
             </el-form-item>
             <!-- 密码 -->
-            <el-form-item prop="pass">
+            <el-form-item prop="password">
               <el-input
-                v-model.trim="loginForm.pass"
+                v-model.trim="loginForm.password"
                 autocomplete="off"
                 placeholder="请输入密码"
                 maxlength="30"
                 class="no-drag-area"
                 show-password
+                @keyup.enter="forget"
               >
               </el-input>
             </el-form-item>
@@ -267,7 +300,7 @@ const closeElectron = () => {
               :loading="loginLoading"
               :disabled="loginLoading"
               class="login-btn no-drag-area"
-              @click="submitForm"
+              @click="forget"
             >
               重置密码
             </el-button>
@@ -279,14 +312,14 @@ const closeElectron = () => {
               :loading="loginLoading"
               :disabled="loginLoading"
               class="rg-btn login-btn no-drag-area"
-              @click="formType = FORM_TYPE.LOGIN"
+              @click="changeFormType(FORM_TYPE.LOGIN)"
             >
               取消
             </el-button>
           </div>
         </template>
         <!-- 同意服务条款 -->
-        <div v-if="formType !== FORM_TYPE.FORGOT_PASSWORD" class="forget-password no-drag-area">
+        <div v-if="formType !== FORM_TYPE.FORGOT_PASSWORD" :class="['forget-password', 'no-drag-area', { shaking: shaking }]">
           <el-checkbox v-model="agreement" class="no-drag-area">
             <span style="color: #999999">我已阅读并同意</span>
           </el-checkbox>
@@ -508,5 +541,15 @@ const closeElectron = () => {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+}
+@keyframes shake {
+  0%, 100% { transform: translateY(0); }
+  25% { transform: translateY(-5px); }
+  50% { transform: translateY(5px); }
+  75% { transform: translateY(-3px); }
+}
+
+.shaking {
+  animation: shake 0.5s ease-in-out;
 }
 </style>

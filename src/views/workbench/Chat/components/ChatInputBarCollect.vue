@@ -37,31 +37,38 @@ const ruleForm = reactive<RuleForm>({
 })
 
 
-const onContextMenu = (e) => {
-  const { index } = e.currentTarget.dataset
-  const event = { x: e.x - 400, y: e.y - 350 }
+const onContextMenu = (e: MouseEvent) => {
+  console.log(e, 'onContentMenu')
+  if (!(e.currentTarget instanceof HTMLElement)) return
+  const index = e.currentTarget.dataset.index
+
+  const event = { ...e, x: e.x - 400, y: e.y - 350, }
   showContextMenu({
     event,
-    menuList: [{
-      label: '重新命名',
-      onClick: (e) => {
-        curEditIndex.value = Number(index)
-      }
-    }, {
-      label: '删除分组',
-      textType: 'danger',
-      onClick: () => {
+    menuList: [
+      {
+        label: '重新命名',
+        textType: '',
+        onClick: () => {
+          curEditIndex.value = Number(index)
+        }
+      }, 
+      {
+        label: '删除分组',
+        textType: 'danger',
+        onClick: () => {
 
+        }
       }
-    }]
+    ]
   })
 }
 
-const handleEditInputBlur = (e) => {
+const handleEditInputBlur = () => {
   curEditIndex.value = -1
 }
 
-const handleSelect = (item) => {
+const handleSelect = (item: number) => {
   emits('select', item)
 }
 

@@ -1,6 +1,9 @@
 import axios from 'axios'
 import { ElMessage } from 'element-plus'
 import { useUserStore } from '../store/user.ts'
+import { NoticeType } from '@/enums/protobuf.ts'
+import emitter from './mitt.ts'
+import { lo } from 'element-plus/lib/locale/index.js'
 
 const http = axios.create({})
 
@@ -28,6 +31,13 @@ http.interceptors.response.use(
     const resData = res.data
     if (resData.code !== '1000') {
       ElMessage.error(resData.memo)
+      if (resData.code == NoticeType.wsDeviceAuthResp) {
+        // 用户不合法 - 重新登录
+        const lastPath = localStorage.getItem('lastPath') || ''
+        emitter.emit('routeLogin', {
+          redirect: lastPath,
+        })
+      }
       return Promise.reject(resData.memo)
     }
     return res.data

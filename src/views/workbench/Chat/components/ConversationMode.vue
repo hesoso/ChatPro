@@ -55,7 +55,10 @@ const handleChangeMode = (type: EnumConvoMode) => {
 
 const extractMemberMsgFlagChange = (flag: EnumFlag) => {
   conversationStore.setExtractMemberMsgFlag(flag)
-  changePanel({extractMemberMsgFlag: conversationStore.chatPanel.extractMemberMsgFlag})
+  if (flag === EnumFlag.NO) {
+    conversationStore.setTargetFlag('targetMemberFlag', EnumFlag.NO)
+  }
+  changePanel({extractMemberMsgFlag: conversationStore.chatPanel.extractMemberMsgFlag })
 }
 
 const handleChangeGroup = (field: ChatPanelEnumFlagKeys) => {
@@ -68,7 +71,7 @@ onMounted(() => {
   getPanel().then((res) => {
     const convoMode = res.data.convoMode
     if (convoMode) {
-      handleChangeMode(convoMode)
+      conversationStore.setConversationMode(convoMode)
     }
   })
 })
@@ -146,6 +149,7 @@ onMounted(() => {
   background: #fff;
   display: flex;
   align-items: center;
+  justify-content: space-between;
   padding: 5px 10px;
 }
 

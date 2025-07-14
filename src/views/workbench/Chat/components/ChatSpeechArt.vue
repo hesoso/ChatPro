@@ -61,6 +61,7 @@ const showSharedCodeImport = ref(false)
   display: flex;
   align-items: center;
   margin-top: 10px;
+  justify-content: space-between;
 }
 
 :deep(.el-tag) {

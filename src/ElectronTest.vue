@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<!-- <script setup lang="ts">
 const handleInsertMeesage = () => {
 	window.databaseApi.onMessage({
 		id: '1008611',
@@ -36,4 +36,4 @@ const handleQueryMeesage = () => {
 
 <style lang="scss">
 .mb10 { margin-bottom: 10px; }
-</style>
+</style> -->

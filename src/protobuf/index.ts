@@ -1,6 +1,7 @@
 import protobuf from 'protobufjs'
 import { UUID } from 'uuidjs'
 import { EnumMsgContentType, NoticeType, ProtoBufferType } from '../enums/protobuf.ts'
+import { IDeviceAuthReqForm } from '@/types/User.ts'
 
 class MessageBuffer {
   Any
@@ -27,7 +28,8 @@ class MessageBuffer {
   }
 
   // 鉴权buffer
-  getWsDeviceAuthBuffer(payload: deviceAuthReqForm) {
+  getWsDeviceAuthBuffer(payload: IDeviceAuthReqForm) {
+    console.log('payload', payload);
     const payloadBuffer = this.WsDeviceAuthReq.encode({
       username: payload.username,
       password: payload.password,

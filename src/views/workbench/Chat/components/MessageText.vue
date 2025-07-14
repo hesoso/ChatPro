@@ -1,9 +1,11 @@
 <script setup lang="ts">
+import { CpMessageProps } from '../types/message';
 
+const props = defineProps<CpMessageProps>()
 </script>
 
 <template>
-<div class="message-text">你好</div>
+<div class="message-text">你好{{ messageData.content }}</div>
 </template>
 
 <style scoped lang="scss">
