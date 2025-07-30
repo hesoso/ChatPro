@@ -4,7 +4,7 @@ import SearchInput from '@/components/SearchInput.vue'
 import CreateNewConversation from '@/views/workbench/Chat/components/CreateNewConversation.vue'
 import { useConversationStore } from '@/store/useConversationStore.ts'
 import { changePanel, getPanel } from '@/apis'
-import { ChatModePanel, EnumConvoMode, EnumConvoModeNames, EnumFlag } from '@/views/workbench/Chat/types/chat.d.ts'
+import { ChatModePanel, ChatPanelEnumFlagKeys, EnumConvoMode, EnumConvoModeToNames, EnumFlag } from '@/views/workbench/Chat/types/chat'
 
 const conversationStore = useConversationStore()
 
@@ -29,7 +29,7 @@ const modeList = ref([{
 const extractMemberMsgFlag = ref(conversationStore.chatPanel.extractMemberMsgFlag)
 
 const modeText = computed(() => {
-  const convoModeName = EnumConvoModeNames[conversationStore.chatPanel.convoMode]
+  const convoModeName = EnumConvoModeToNames[conversationStore.chatPanel.convoMode!]
   const groupNames = []
   if (conversationStore.chatPanel.targetContactFlag === EnumFlag.YES) {
     groupNames.push('好友')
@@ -55,18 +55,24 @@ const handleChangeMode = (type: EnumConvoMode) => {
 
 const extractMemberMsgFlagChange = (flag: EnumFlag) => {
   conversationStore.setExtractMemberMsgFlag(flag)
-  changePanel({extractMemberMsgFlag: conversationStore.chatPanel.extractMemberMsgFlag})
+  if (flag === EnumFlag.NO) {
+    conversationStore.setTargetFlag('targetMemberFlag', EnumFlag.NO)
+  }
+  changePanel({extractMemberMsgFlag: conversationStore.chatPanel.extractMemberMsgFlag })
 }
 
-const handleChangeGroup = (field: string) => {
+const handleChangeGroup = (field: ChatPanelEnumFlagKeys) => {
   const val = conversationStore.chatPanel[field] === EnumFlag.YES ? EnumFlag.NO : EnumFlag.YES
   conversationStore.setTargetFlag(field, val)
   changePanel({[field]: val})
 }
 
 onMounted(() => {
-  getPanel().then((res: HttpResponse<ChatModePanel>) => {
-    handleChangeMode(res.data.convoMode)
+  getPanel().then((res) => {
+    const convoMode = res.data.convoMode
+    if (convoMode) {
+      conversationStore.setConversationMode(convoMode)
+    }
   })
 })
 
@@ -143,6 +149,7 @@ onMounted(() => {
   background: #fff;
   display: flex;
   align-items: center;
+  justify-content: space-between;
   padding: 5px 10px;
 }
 

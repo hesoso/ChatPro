@@ -9,6 +9,11 @@
       "DOM.Iterable"
     ],
     "skipLibCheck": true,
+    "paths": {
+      "@/*": [
+        "./src/*"
+      ]
+    },
     /* Bundler mode */
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
@@ -26,7 +31,9 @@
     "src/**/*.ts",
     "src/**/*.tsx",
     "src/**/*.vue",
-    "electron"
+    "electron",
+    "src/**/*.d.ts",
+    "auto-imports.d.ts"
   ],
   "references": [
     {

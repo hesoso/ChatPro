@@ -1,6 +1,6 @@
 import { initProtobuf } from '../protobuf'
 import { NoticeType } from '../enums/protobuf.ts'
-import { deviceAuthReqForm } from '../types/User.d.ts'
+import { IDeviceAuthReqForm, UserInfo } from '../types/User.ts'
 import { ElMessage } from 'element-plus'
 import { useUserStore } from '../store/user.ts'
 import { useConversationStore } from '../store/useConversationStore.ts'
@@ -65,7 +65,7 @@ class MessageSocket {
       this.deviceAuthCallback.length = 0
     } else if (res.noticeType === NoticeType.msgNewNotice) {
       const conversationStore = useConversationStore()
-      const message = {
+      const message: I_OnMessageParams = {
         "wechatId": '',
         "chatType": '1',
         "draft": '',
@@ -92,7 +92,7 @@ class MessageSocket {
   }
 
   // 发送鉴权请求
-  wsDeviceAuthReq(formData: deviceAuthReqForm) {
+  wsDeviceAuthReq(formData: IDeviceAuthReqForm) {
     const msgBuffer = this.MessageBuffer.getWsDeviceAuthBuffer(formData)
     this.socket?.send(msgBuffer);
   }
@@ -106,7 +106,7 @@ export const initMessageSocket = async (userInfo: UserInfo) => {
   return megSocket
 }
 
-export const wsDeviceAuthReq = (data: deviceAuthReqForm, cb?: Function) => {
+export const wsDeviceAuthReq = (data: IDeviceAuthReqForm, cb?: Function) => {
   megSocket.wsDeviceAuthReq(data)
   cb && megSocket.deviceAuthCallback.push(cb)
 }

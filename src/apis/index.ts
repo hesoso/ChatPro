@@ -2,6 +2,7 @@ import http from '../utils/http.ts'
 import { UUID } from 'uuidjs'
 import moment from 'moment'
 import { ChatModePanel } from '../views/workbench/Chat/types/chat'
+import { UserInfo } from '@/types/User.ts'
 
 interface loginUser {
   mobile: string
@@ -17,7 +18,7 @@ const commonParams = () => {
   }
 }
 
-export const getUser = ({ mobile }: loginUser) => {
+export const getUser = ({ mobile }: loginUser): Promise<HttpResponse<UserInfo>> => {
   return http.post('/bee/user/getUser', {
     method: 'getUser',
     mobile: mobile,
@@ -25,7 +26,7 @@ export const getUser = ({ mobile }: loginUser) => {
   })
 }
 
-export const getUserDevice = (data: UserDeviceForm) => {
+export const getUserDevice = <T = unknown>(data: UserDeviceForm): Promise<HttpResponse<T>> => {
   return http.post('/bee/device/getUserDevice', {
     method: 'getUserDevice',
     keyword: data?.keyword,
@@ -34,12 +35,13 @@ export const getUserDevice = (data: UserDeviceForm) => {
 }
 
 
-export const getPanel = () => {
+
+export const getPanel = (): Promise<HttpResponse<ChatModePanel>> => {
   return http.post('/bee/panel/getPanel', {
     method: 'getPanel',
     ...commonParams()
-  })
-}
+  });
+};
 
 
 export const changePanel = (params: ChatModePanel) => {

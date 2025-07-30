@@ -35,6 +35,9 @@ dependencies:
   humps:
     specifier: ^2.0.1
     version: 2.0.1
+  mitt:
+    specifier: ^3.0.1
+    version: 3.0.1
   moment:
     specifier: ^2.30.1
     version: 2.30.1
@@ -60,7 +63,7 @@ dependencies:
     specifier: ^4.5.1
     version: 4.5.1(vue@3.5.13)
   vue-virtual-scroller:
-    specifier: ^2.0.0-beta.8
+    specifier: 2.0.0-beta.8
     version: 2.0.0-beta.8(vue@3.5.13)
   vue3-emoji-picker:
     specifier: ^1.1.8
@@ -73,6 +76,9 @@ devDependencies:
   '@vitejs/plugin-vue':
     specifier: ^5.0.4
     version: 5.2.4(vite@5.4.19)(vue@3.5.13)
+  code-inspector-plugin:
+    specifier: ^0.20.15
+    version: 0.20.17
   electron:
     specifier: ^30.0.1
     version: 30.5.1
@@ -2874,6 +2880,14 @@ packages:
       supports-color: 2.0.0
     dev: true
 
+  /chalk@4.1.1:
+    resolution: {integrity: sha512-diHzdDKxcU+bAsUboHLPEDQiw0qEe0qd7SYUn3HgcFlWgbDcfLGswOHYeGrHKzG9z6UYf01d9VFMfZxPM1xZSg==}
+    engines: {node: '>=10'}
+    dependencies:
+      ansi-styles: 4.3.0
+      supports-color: 7.2.0
+    dev: true
+
   /chalk@4.1.2:
     resolution: {integrity: sha512-oKnbhFyRIXpUuez8iBMmyEa4nbj4IOQyuhc/wy9kY7/WVPcwIO9VA668Pu8RkO7+0G76SLROeyw9CpQ061i4mA==}
     engines: {node: '>=10'}
@@ -2986,6 +3000,31 @@ packages:
   /clone@2.1.2:
     resolution: {integrity: sha512-3Pe/CF1Nn94hyhIYpjtiLhdCoEoz0DqQ+988E9gmeEdQZlojxnOb74wctFyuwWQHzqyf9X7C7MG8juUpqBJT8w==}
     engines: {node: '>=0.8'}
+    dev: true
+
+  /code-inspector-core@0.20.17:
+    resolution: {integrity: sha512-vZkEfNNFhB5KeBMGSsM4NaPBjmaQfAEMM2iyqn9K1EVpm070RN/aFVu42fmPRGpLqyInj4z9yZozzybCjZ2CIA==}
+    dependencies:
+      '@vue/compiler-dom': 3.5.13
+      chalk: 4.1.2
+      dotenv: 16.5.0
+      launch-ide: 1.0.8
+      portfinder: 1.0.37
+    transitivePeerDependencies:
+      - supports-color
+    dev: true
+
+  /code-inspector-plugin@0.20.17:
+    resolution: {integrity: sha512-qYL/3xLCDbmMwmmZGFyvSDCrkxn2VmgDn3OHBis8nbtQHMLbzbivj2DgluqouqT2M2rTalx8nQGvJhKfFEllEw==}
+    dependencies:
+      chalk: 4.1.1
+      code-inspector-core: 0.20.17
+      dotenv: 16.5.0
+      esbuild-code-inspector-plugin: 0.20.17
+      vite-code-inspector-plugin: 0.20.17
+      webpack-code-inspector-plugin: 0.20.17
+    transitivePeerDependencies:
+      - supports-color
     dev: true
 
   /collection-visit@1.0.0:
@@ -3502,7 +3541,6 @@ packages:
   /dotenv@16.5.0:
     resolution: {integrity: sha512-m/C+AwOAr9/W1UOIZUo232ejMNnJAJtYQjUbHoNTBNTJSvqzzDh7vnrei3o3r3m9blf6ZoDkvcw0VmozNRFJxg==}
     engines: {node: '>=12'}
-    dev: false
 
   /dotenv@9.0.2:
     resolution: {integrity: sha512-I9OvvrHp4pIARv4+x9iuewrWycX6CcZtoAu1XrzPxc5UygMJXJZYmBsynku8IkrJwgypE5DGNjDPmPRhDCptUg==}
@@ -3827,6 +3865,14 @@ packages:
       d: 1.0.2
       ext: 1.7.0
     dev: false
+
+  /esbuild-code-inspector-plugin@0.20.17:
+    resolution: {integrity: sha512-YN0y8lVDCOWzfQlivhuxMYtjp0B2bqho1zP0RetdjsAXCuSgwq1Dj1gc5z0sT8iJGhFaKsXmLls2crB5uupcvg==}
+    dependencies:
+      code-inspector-core: 0.20.17
+    transitivePeerDependencies:
+      - supports-color
+    dev: true
 
   /esbuild@0.21.5:
     resolution: {integrity: sha512-mg3OPMV4hXywwpoDxu3Qda5xCKQi+vCTZq8S9J/EpkhB2HzKXq4SNFZE3+NK93JYxc8VMSep+lOUSC/RVKaBqw==}
@@ -5494,6 +5540,13 @@ packages:
     resolution: {integrity: sha512-Y+60/zizpJ3HRH8DCss+q95yr6145JXZo46OTpFvDZWLfRCE4qChOyk1b26nMaNpfHHgxagk9dXT5OP0Tfe+dQ==}
     dev: true
 
+  /launch-ide@1.0.8:
+    resolution: {integrity: sha512-DD0bSMGCx3R94zHR//ZynWpjkcimnAhbAae8frLJQJ5gK37wX/ZpLOU9Hw4cF6VklQVA7ZplcHKzJSDzq3YmIw==}
+    dependencies:
+      chalk: 4.1.2
+      dotenv: 16.5.0
+    dev: true
+
   /lazy-val@1.0.5:
     resolution: {integrity: sha512-0/BnGCCfyUMkBpeDgWihanIAF9JmZhHBgUhEqzvf+adhNGLoP6TaiI5oF8oyb3I45P+PcnrqihSf01M0l0G5+Q==}
     dev: true
@@ -6492,6 +6545,16 @@ packages:
       '@xmldom/xmldom': 0.8.10
       base64-js: 1.5.1
       xmlbuilder: 15.1.1
+    dev: true
+
+  /portfinder@1.0.37:
+    resolution: {integrity: sha512-yuGIEjDAYnnOex9ddMnKZEMFE0CcGo6zbfzDklkmT1m5z734ss6JMzN9rNB3+RR7iS+F10D4/BVIaXOyh8PQKw==}
+    engines: {node: '>= 10.12'}
+    dependencies:
+      async: 3.2.6
+      debug: 4.4.1
+    transitivePeerDependencies:
+      - supports-color
     dev: true
 
   /posix-character-classes@0.1.1:
@@ -8158,6 +8221,14 @@ packages:
     dev: true
     optional: true
 
+  /vite-code-inspector-plugin@0.20.17:
+    resolution: {integrity: sha512-WdAEvVZCtvJR/xFGaObdI23ic9umqf8BIAaROetsICsJaXnS0AqvtbAONGgfQ7zLXOBv9PJAuIgICkIDFsCnZA==}
+    dependencies:
+      code-inspector-core: 0.20.17
+    transitivePeerDependencies:
+      - supports-color
+    dev: true
+
   /vite-hot-client@2.0.4(vite@5.4.19):
     resolution: {integrity: sha512-W9LOGAyGMrbGArYJN4LBCdOC5+Zwh7dHvOHC0KmGKkJhsOzaKbpo/jEjpPKVHIW0/jBWj8RZG0NUxfgA8BxgAg==}
     peerDependencies:
@@ -8436,6 +8507,14 @@ packages:
     resolution: {integrity: sha512-XHPEwS0q6TaxcvG85+8EYkbiCux2XtWG2mkc47Ng2A77BQu9+DqIOJldST4HgPkuea7dvKSj5VgX3P1d4rW8Tg==}
     dependencies:
       defaults: 1.0.4
+    dev: true
+
+  /webpack-code-inspector-plugin@0.20.17:
+    resolution: {integrity: sha512-MxPJyU9ob7pgv5tJpBGQrUKCRWa+nXuNsZPdvFr5t4TTlEXUCDp5n3U8P8AEb28CFzLnG+8bzaIcs5IBx14C1A==}
+    dependencies:
+      code-inspector-core: 0.20.17
+    transitivePeerDependencies:
+      - supports-color
     dev: true
 
   /webpack-virtual-modules@0.6.2:

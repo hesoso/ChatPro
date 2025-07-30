@@ -1,26 +1,45 @@
 <script setup lang="ts">
-window.databaseApi.onMessage({
-        "wechatId": '1008612111',
-        "chatType": '1',
-        "draft": '213',
-        "sender": "7881302256961285",
-        "receiver": "10737336402983720",
-        "senderNickname": "那年十八",
-        "msgId": "60389799399517291521112",
-        "msgTime": 1751506557,
-        "room": true,
-        "contentType": 3,
-        "content": "hello bee"
-    }
-  )
+import { onMounted } from 'vue'
+import emitter from './utils/mitt'
+import { useRoute, useRouter } from 'vue-router'
 
-const messages = await window.databaseApi.getMessages({
-        "wechatId": '1008612111',
-        "convoId": '7881302256961285',
-        "chatType": '1',
-        options: {}
+const router = useRouter()
+const route = useRoute()
+onMounted(async () => {
+  emitter.on('routeLogin', (event) => {
+    // 如果已经在登录页面，则不处理
+    if (route.name === 'Login') return
+    const redirect = event?.redirect
+    console.log('routeLogin', redirect)
+    router.push({
+      name: 'Login',
+      query: {
+        redirect
+      }
+    })
+
+  })
+  window.databaseApi.onMessage({
+      "wechatId": '1008611',
+      "chatType": '1',
+      "draft": '213',
+      "sender": "7881302256961285",
+      "receiver": "10737336402983720",
+      "senderNickname": "那年十八",
+      "msgId": "6038979939951729151",
+      "msgTime": 1751506557,
+      "room": true,
+      "contentType": 3,
+      "content": "hello bee"
+  })
+
+  const messages = await window.databaseApi.getMessages({
+          "wechatId": '1008612111',
+          "convoId": '7881302256961285',
+          "chatType": '1',
+          options: {}
+  })
 })
-
 </script>
 
 <template>

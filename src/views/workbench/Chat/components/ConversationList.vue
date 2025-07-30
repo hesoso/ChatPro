@@ -4,6 +4,7 @@ import { useConversationStore } from '@/store/useConversationStore.ts'
 
 import ConversationItem from '@/views/workbench/Chat/components/ConversationItem.vue'
 import { ConversationModeEnum, ConversationStatusEnum } from '@/enums/conversation.ts'
+import { EnumConvoMode } from '@/views/workbench/Chat/types/chat'
 
 
 const conversationStore = useConversationStore()
@@ -26,7 +27,8 @@ const activeNav = ref(navList.value[0])
 const tabName = ref(ConversationStatusEnum.wait)
 
 const curConversation = ref(0)
-const handleSelectConversation = (conversationindex) => {
+const handleSelectConversation = (conversationindex: number) => {
+  console.log(conversationindex, 'handleSelectConversation')
   curConversation.value = conversationindex
 
   if (tabName.value === ConversationStatusEnum.wait) {
@@ -47,7 +49,7 @@ watch(() => conversationStore.conversationStatus, (newVal, oldVal) => {
 
 <template>
   <div class="conversation-list">
-    <el-tabs v-if="conversationStore.conversationMode === ConversationModeEnum.reception" v-model="tabName">
+    <el-tabs v-if="conversationStore.conversationMode === EnumConvoMode.server" v-model="tabName">
       <el-tab-pane :name="ConversationStatusEnum.wait">
         <template #label><span>待接待</span></template>
       </el-tab-pane>

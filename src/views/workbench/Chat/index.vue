@@ -16,6 +16,7 @@ import { ConversationStatusEnum } from '@/enums/conversation.ts'
 import SvgIcon from '@/components/SvgIcon.vue'
 import TransmitMessage from '@/views/workbench/Chat/components/TransmitMessage.vue'
 import ChatAllMessage from '@/views/workbench/Chat/components/ChatAllMessage.vue'
+import { EnumConvoMode } from './types/chat'
 
 const conversationStore = useConversationStore()
 const layoutStore = useLayoutStore()
@@ -23,6 +24,10 @@ const activeName = ref('tab1')
 const showTransmitMessage = ref(false)
 const showAllMessage = ref(false)
 
+// 显示机器人渲染列表
+const showRobotRenderList = computed(() => {
+  return conversationStore.chatPanel.convoMode === EnumConvoMode.single
+})
 const handleClick = (tab: TabsPaneContext, event: Event) => {
   console.log(tab, event)
 }
@@ -56,7 +61,8 @@ const handleShowAllMessage = () => {
       <ConversationMode />
       <!-- 机器人列表、会话列表 -->
       <div class="layout-qz">
-        <RobotList />
+        <!-- 基于会话模式是否为独立模式显示机器人列表 -->
+        <RobotList v-if="showRobotRenderList" />
         <ConversationList />
       </div>
     </div>
